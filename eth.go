@@ -22,11 +22,6 @@ type EthLib struct {
 	chainID *big.Int
 }
 
-type ethAccount struct {
-	Address string
-	Private string
-}
-
 func NewEthLib() *EthLib {
 	return &EthLib{}
 }
@@ -97,21 +92,14 @@ func (e *EthLib) GetBalance(address string) (*big.Int, error) {
 	return balance, nil
 }
 
-// 创建账号 - 返回地址和私钥
-func (e *EthLib) CreateAccount() (*ethAccount, error) {
+// 创建账号
+func (e *EthLib) CreatePrivateKey() ([]byte, error) {
 	//Create an account
 	key, err := crypto.GenerateKey()
 	if err != nil {
 		return nil, err
 	}
-
-	//Get the address
-	address := crypto.PubkeyToAddress(key.PublicKey).Hex()
-
-	//Get the private key
-	privateKey := hex.EncodeToString(key.D.Bytes())
-
-	return &ethAccount{Address: address, Private: privateKey}, nil
+	return key.D.Bytes(), nil
 }
 
 // 校验地址
@@ -309,12 +297,6 @@ func (e *EthLib) GetBlock(number *big.Int) (*types.Block, error) {
 
 // 私钥生成 common.Address
 func (e *EthLib) priKeyToAddr(priKey *ecdsa.PrivateKey) (*common.Address, error) {
-
-	pubKey := priKey.Public()
-	pubKeyECDSA, ok := pubKey.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
-	addr := crypto.PubkeyToAddress(*pubKeyECDSA)
+	addr := crypto.PubkeyToAddress(priKey.PublicKey)
 	return &addr, nil
 }

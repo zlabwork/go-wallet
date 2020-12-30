@@ -70,18 +70,18 @@ func (e *EthLib) GetChainID() *big.Int {
 }
 
 // 根据私钥获取地址
-func (e *EthLib) GetAddrFromPriKey(priKey []byte) (address string, err error) {
-	k, err := crypto.ToECDSA(priKey)
+func (e *EthLib) GetAddrFromPriKey(priKey []byte) (address string, error error) {
+
+	privateKey, err := crypto.ToECDSA(priKey)
 	if err != nil {
 		return "", err
 	}
 
-	pubKey := k.Public()
-	pubKeyECDSA, ok := pubKey.(*ecdsa.PublicKey)
-	if !ok {
-		return "", errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	addr, err := e.priKeyToAddr(privateKey)
+	if err != nil {
+		return "", err
 	}
-	return crypto.PubkeyToAddress(*pubKeyECDSA).Hex(), nil
+	return addr.Hex(), nil
 }
 
 // 获取额度
@@ -200,14 +200,10 @@ func (e *EthLib) GenRawTxData(priKey []byte, toAddr string, wei *big.Int, gasLim
 	}
 
 	// 2. 公钥
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		return "", errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
+	address, err := e.priKeyToAddr(privateKey)
 
 	// 3. nonce
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	fromAddress := *address
 	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		return "", err
@@ -234,13 +230,12 @@ func (e *EthLib) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddress string, w
 		return "", errors.New("server is not connected")
 	}
 
-	publicKey := priKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		return "", errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	address, err := e.priKeyToAddr(priKey)
+	if err != nil {
+		return "", err
 	}
 
-	from := crypto.PubkeyToAddress(*publicKeyECDSA)
+	from := *address
 	to := common.HexToAddress(toAddress)
 
 	nonce, err := e.client.PendingNonceAt(context.Background(), from)
@@ -310,4 +305,16 @@ func (e *EthLib) GetBlock(number *big.Int) (*types.Block, error) {
 	}
 
 	return block, nil
+}
+
+// 私钥生成 common.Address
+func (e *EthLib) priKeyToAddr(priKey *ecdsa.PrivateKey) (*common.Address, error) {
+
+	pubKey := priKey.Public()
+	pubKeyECDSA, ok := pubKey.(*ecdsa.PublicKey)
+	if !ok {
+		return nil, errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	}
+	addr := crypto.PubkeyToAddress(*pubKeyECDSA)
+	return &addr, nil
 }

@@ -76,8 +76,8 @@ func (e *EthLib) GetDefaultPriKey() string {
 }
 
 // 设置默认私钥
-func (e *EthLib) SetDefaultPriKey(priKey string) error {
-	k, err := crypto.HexToECDSA(priKey)
+func (e *EthLib) SetDefaultPriKey(priKey []byte) error {
+	k, err := crypto.ToECDSA(priKey)
 	if err != nil {
 		return err
 	}
@@ -86,8 +86,8 @@ func (e *EthLib) SetDefaultPriKey(priKey string) error {
 }
 
 // 根据私钥获取地址
-func (e *EthLib) GetAddrFromPriKey(priKey string) (address string, err error) {
-	k, err := crypto.HexToECDSA(priKey)
+func (e *EthLib) GetAddrFromPriKey(priKey []byte) (address string, err error) {
+	k, err := crypto.ToECDSA(priKey)
 	if err != nil {
 		return "", err
 	}
@@ -155,8 +155,8 @@ func (e *EthLib) Transfer(toAddress string, weiAmount *big.Int) (txHash string, 
 }
 
 // 交易 - 使用指定私钥
-func (e *EthLib) TransferUsePriKey(priKey string, toAddress string, weiAmount *big.Int) (txHash string, err error) {
-	k, err := crypto.HexToECDSA(priKey)
+func (e *EthLib) TransferUsePriKey(priKey []byte, toAddress string, weiAmount *big.Int) (txHash string, err error) {
+	k, err := crypto.ToECDSA(priKey)
 	if err != nil {
 		return "", err
 	}
@@ -183,7 +183,7 @@ func (e *EthLib) SendRawTX(rawTx string) (txHash string, err error) {
 }
 
 // 生成原始交易 - 简单
-func (e *EthLib) GenRawTxSimple(priKey string, toAddr string, wei *big.Int) (rawTX string, err error) {
+func (e *EthLib) GenRawTxSimple(priKey []byte, toAddr string, wei *big.Int) (rawTX string, err error) {
 
 	if e.client == nil {
 		return "", errors.New("server is not connected")
@@ -207,7 +207,7 @@ func (e *EthLib) GenRawTxSimple(priKey string, toAddr string, wei *big.Int) (raw
 }
 
 // 生成原始交易 - 复杂
-func (e *EthLib) GenRawTxData(priKey string, toAddr string, wei *big.Int, gasLimit uint64, gasPrice *big.Int, chainID *big.Int, data []byte) (rawTX string, err error) {
+func (e *EthLib) GenRawTxData(priKey []byte, toAddr string, wei *big.Int, gasLimit uint64, gasPrice *big.Int, chainID *big.Int, data []byte) (rawTX string, err error) {
 
 	if e.client == nil {
 		return "", errors.New("server is not connected")
@@ -215,7 +215,7 @@ func (e *EthLib) GenRawTxData(priKey string, toAddr string, wei *big.Int, gasLim
 	client := e.client
 
 	// 1. 私钥
-	privateKey, err := crypto.HexToECDSA(priKey)
+	privateKey, err := crypto.ToECDSA(priKey)
 	if err != nil {
 		return "", err
 	}
@@ -295,8 +295,8 @@ func (e *EthLib) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddress string, w
 }
 
 // 签名
-func (e *EthLib) GenSign(priKey string, data []byte) (signature string, err error) {
-	privateKey, err := crypto.HexToECDSA(priKey)
+func (e *EthLib) GenSign(priKey []byte, data []byte) (signature string, err error) {
+	privateKey, err := crypto.ToECDSA(priKey)
 	if err != nil {
 		return "", err
 	}

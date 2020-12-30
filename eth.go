@@ -19,7 +19,6 @@ import (
 
 type EthLib struct {
 	client  *ethclient.Client
-	priKey  *ecdsa.PrivateKey
 	chainID *big.Int
 }
 
@@ -68,21 +67,6 @@ func (e *EthLib) GetChainID() *big.Int {
 	}
 	e.chainID = id
 	return e.chainID
-}
-
-// 获取默认私钥
-func (e *EthLib) GetDefaultPriKey() string {
-	return crypto.PubkeyToAddress(e.priKey.PublicKey).Hex()
-}
-
-// 设置默认私钥
-func (e *EthLib) SetDefaultPriKey(priKey []byte) error {
-	k, err := crypto.ToECDSA(priKey)
-	if err != nil {
-		return err
-	}
-	e.priKey = k
-	return nil
 }
 
 // 根据私钥获取地址
@@ -147,11 +131,6 @@ func (e *EthLib) IsContract(address string) (bool, error) {
 		return false, err
 	}
 	return len(byteCode) > 0, nil
-}
-
-// 交易 - 使用默认私钥
-func (e *EthLib) Transfer(toAddress string, weiAmount *big.Int) (txHash string, err error) {
-	return e.transferViaPriKey(e.priKey, toAddress, weiAmount)
 }
 
 // 交易 - 使用指定私钥

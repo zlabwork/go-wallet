@@ -122,31 +122,55 @@ func (e *EthLib) IsContract(address string) (bool, error) {
 }
 
 // 交易 - 使用指定私钥
-func (e *EthLib) TransferUsePriKey(priKey []byte, toAddress string, weiAmount *big.Int) (txHash string, err error) {
+func (e *EthLib) TransferUsePriKey(priKey []byte, toAddr string, wei *big.Int) (txHash string, err error) {
 	k, err := crypto.ToECDSA(priKey)
 	if err != nil {
 		return "", err
 	}
-	return e.transferViaPriKey(k, toAddress, weiAmount)
+	return e.transferViaPriKey(k, toAddr, wei)
 }
 
-// 发送原始交易
-func (e *EthLib) SendRawTX(rawTx string) (txHash string, err error) {
-
+func (e *EthLib) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddr string, wei *big.Int) (txHash string, err error) {
 	if e.client == nil {
 		return "", errors.New("server is not connected")
 	}
 
-	rawTxBytes, err := hex.DecodeString(rawTx)
-
-	tx := new(types.Transaction)
-	rlp.DecodeBytes(rawTxBytes, &tx)
-
-	if err = e.client.SendTransaction(context.Background(), tx); err != nil {
+	address, err := e.priKeyToAddr(priKey)
+	if err != nil {
 		return "", err
 	}
 
-	return tx.Hash().Hex(), nil
+	from := *address
+	to := common.HexToAddress(toAddr)
+
+	nonce, err := e.client.PendingNonceAt(context.Background(), from)
+	if err != nil {
+		return "", err
+	}
+
+	// gasPrice := big.NewInt(30000000000) // in wei (30 gwei)
+	gasPrice, err := e.client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return "", err
+	}
+	gasLimit := uint64(21000) // ETH转账的燃气应设上限为21000单位。
+
+	tx := types.NewTransaction(nonce, to, wei, gasLimit, gasPrice, nil)
+
+	chainID := e.GetChainID()
+
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), priKey)
+	if err != nil {
+		return "", err
+	}
+
+	// SendTransaction
+	err = e.client.SendTransaction(context.Background(), signedTx)
+	if err != nil {
+		return "", err
+	}
+
+	return signedTx.Hash().Hex(), nil
 }
 
 // 生成原始交易 - 简单
@@ -213,47 +237,23 @@ func (e *EthLib) GenRawTxData(priKey []byte, toAddr string, wei *big.Int, gasLim
 	return rawTxHex, nil
 }
 
-func (e *EthLib) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddress string, weiAmount *big.Int) (txHash string, err error) {
+// 发送原始交易
+func (e *EthLib) SendRawTX(rawTx string) (txHash string, err error) {
+
 	if e.client == nil {
 		return "", errors.New("server is not connected")
 	}
 
-	address, err := e.priKeyToAddr(priKey)
-	if err != nil {
+	rawTxBytes, err := hex.DecodeString(rawTx)
+
+	tx := new(types.Transaction)
+	rlp.DecodeBytes(rawTxBytes, &tx)
+
+	if err = e.client.SendTransaction(context.Background(), tx); err != nil {
 		return "", err
 	}
 
-	from := *address
-	to := common.HexToAddress(toAddress)
-
-	nonce, err := e.client.PendingNonceAt(context.Background(), from)
-	if err != nil {
-		return "", err
-	}
-
-	// gasPrice := big.NewInt(30000000000) // in wei (30 gwei)
-	gasPrice, err := e.client.SuggestGasPrice(context.Background())
-	if err != nil {
-		return "", err
-	}
-	gasLimit := uint64(21000) // ETH转账的燃气应设上限为21000单位。
-
-	tx := types.NewTransaction(nonce, to, weiAmount, gasLimit, gasPrice, nil)
-
-	chainID := e.GetChainID()
-
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), priKey)
-	if err != nil {
-		return "", err
-	}
-
-	// SendTransaction
-	err = e.client.SendTransaction(context.Background(), signedTx)
-	if err != nil {
-		return "", err
-	}
-
-	return signedTx.Hash().Hex(), nil
+	return tx.Hash().Hex(), nil
 }
 
 // 签名

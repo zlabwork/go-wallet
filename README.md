@@ -3,13 +3,23 @@
 go get github.com/zlabwork/go-chain
 # or use this lib with go.mod
 ```
-
-
-## 使用
+## bitcoin
 ```golang
-// 创建账户
-lib := chain.NewEthLib()
-account, _ := lib.CreateAccount()
+import "github.com/zlabwork/go-chain/bitcoin"
+
+priKey := bitcoin.GeneratePrivateKey()
+pubKey := bitcoin.GeneratePublicKey(priKey)
+address1 := bitcoin.P2PKH(pubKey)
+address2 := bitcoin.P2SH(pubKey)
+```
+
+## ethereum
+```golang
+import "github.com/zlabwork/go-chain/ethereum"
+
+lib := ethereum.NewEthLib()
+priKey, _ := lib.GeneratePrivateKey()
+address, _ := lib.GetAddrFromPriKey(priKey)
 
 // 测试网络
 lib.Connect("http://127.0.0.1:8545")

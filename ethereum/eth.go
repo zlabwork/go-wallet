@@ -1,4 +1,4 @@
-package chain
+package ethereum
 
 // docs: https://goethereumbook.org/zh
 
@@ -93,7 +93,7 @@ func (e *EthLib) GetBalance(address string) (*big.Int, error) {
 }
 
 // 创建账号
-func (e *EthLib) CreatePrivateKey() ([]byte, error) {
+func (e *EthLib) GeneratePrivateKey() ([]byte, error) {
 	//Create an account
 	key, err := crypto.GenerateKey()
 	if err != nil {

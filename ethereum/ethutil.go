@@ -1,4 +1,4 @@
-package chain
+package ethereum
 
 import (
 	"encoding/hex"

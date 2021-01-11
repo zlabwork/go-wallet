@@ -1,4 +1,4 @@
-package libschain
+package chain
 
 // docs: https://goethereumbook.org/zh
 

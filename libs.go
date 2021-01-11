@@ -1,4 +1,4 @@
-package libschain
+package chain
 
 import "crypto/rand"
 

@@ -1,6 +1,6 @@
 ## 安装
 ```bash
-go get github.com/zlabwork/libschain
+go get github.com/zlabwork/go-chain
 # or use this lib with go.mod
 ```
 
@@ -8,7 +8,7 @@ go get github.com/zlabwork/libschain
 ## 使用
 ```golang
 // 创建账户
-lib := libschain.NewEthLib()
+lib := chain.NewEthLib()
 account, _ := lib.CreateAccount()
 
 // 测试网络

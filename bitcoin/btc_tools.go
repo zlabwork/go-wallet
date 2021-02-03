@@ -27,6 +27,11 @@ func GeneratePublicKey(priKey []byte) []byte {
 	return compressPublicKey(curve.ScalarBaseMult(priKey))
 }
 
+func GenerateUncompressedPublicKey(priKey []byte) []byte {
+	curve.ScalarBaseMult(priKey)
+	return uncompressedPublicKey(curve.ScalarBaseMult(priKey))
+}
+
 // https://learnmeabitcoin.com/technical/wif
 func WIF(priKey []byte) string {
 	version := []byte{0x80}
@@ -78,5 +83,13 @@ func compressPublicKey(x *big.Int, y *big.Int) []byte {
 	}
 	key.Write(xBytes)
 
+	return key.Bytes()
+}
+
+func uncompressedPublicKey(x *big.Int, y *big.Int) []byte {
+	var key bytes.Buffer
+	key.WriteByte(byte(0x4))
+	key.Write(x.Bytes())
+	key.Write(y.Bytes())
 	return key.Bytes()
 }

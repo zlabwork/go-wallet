@@ -19,7 +19,7 @@ import "github.com/zlabwork/go-chain/ethereum"
 
 lib := ethereum.NewEthLib()
 priKey, _ := lib.GeneratePrivateKey()
-address, _ := lib.GetAddrFromPriKey(priKey)
+address, _ := lib.GetAddress(priKey)
 
 // 测试网络
 lib.Connect("http://127.0.0.1:8545")

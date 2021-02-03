@@ -65,7 +65,7 @@ func (e *EthLib) GetChainID() *big.Int {
 }
 
 // 根据私钥获取地址
-func (e *EthLib) GetAddrFromPriKey(priKey []byte) (address string, error error) {
+func (e *EthLib) GetAddress(priKey []byte) (address string, error error) {
 
 	privateKey, err := crypto.ToECDSA(priKey)
 	if err != nil {

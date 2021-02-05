@@ -3,6 +3,7 @@ package bitcoin
 import (
 	"bytes"
 	"crypto/rand"
+	"errors"
 	"github.com/FactomProject/btcutilecc"
 	"github.com/mr-tron/base58"
 	"math/big"
@@ -44,6 +45,18 @@ func WIF(priKey []byte) string {
 	}
 	key = append(key, sum...)
 	return base58.Encode(key)
+}
+
+// parse WIF
+func ParseWIF(wif string) ([]byte, error) {
+	b, err := base58.Decode(wif)
+	if err != nil {
+		return nil, err
+	}
+	if len(b) < 33 {
+		return nil, errors.New("error WIF data")
+	}
+	return b[1:33], nil
 }
 
 // @docs https://learnmeabitcoin.com/technical/public-key-hash

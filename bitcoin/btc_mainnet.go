@@ -28,7 +28,7 @@ func GeneratePublicKey(priKey []byte) []byte {
 	return compressPublicKey(curve.ScalarBaseMult(priKey))
 }
 
-func GenerateUncompressedPublicKey(priKey []byte) []byte {
+func GeneratePublicKeyUncompressed(priKey []byte) []byte {
 	curve.ScalarBaseMult(priKey)
 	return uncompressedPublicKey(curve.ScalarBaseMult(priKey))
 }
@@ -81,6 +81,15 @@ func P2SH(pubKey []byte) string {
 	addr := append(preData, sum...)
 
 	return base58.Encode(addr)
+}
+
+// TODO :: bc 开头地址转换
+func Address2Hash160(address string) ([]byte, error) {
+	b, err := base58.Decode(address)
+	if err != nil {
+		return nil, err
+	}
+	return b[1:21], nil
 }
 
 func compressPublicKey(x *big.Int, y *big.Int) []byte {

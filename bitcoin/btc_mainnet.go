@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/FactomProject/btcutilecc"
 	"github.com/mr-tron/base58"
+	"github.com/sipa/bech32/ref/go/src/bech32"
 	"math/big"
 )
 
@@ -83,8 +84,33 @@ func P2SH(pubKey []byte) string {
 	return base58.Encode(addr)
 }
 
-// TODO :: bc 开头地址转换
-func Address2Hash160(address string) ([]byte, error) {
+// https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
+func Segwit(pubKey []byte) string {
+	h, _ := hash160(pubKey)
+	var program []int
+	for _, i := range h {
+		program = append(program, int(i))
+	}
+	addr, err := bech32.SegwitAddrEncode("bc", 0, program)
+	if err != nil {
+		return ""
+	}
+	return addr
+}
+
+func Addr2Hash160(address string) ([]byte, error) {
+	if address[0:2] == "bc" {
+		_, n, err := bech32.SegwitAddrDecode("bc", address)
+		if err != nil {
+			return nil, err
+		}
+		var bs []byte
+		for _, d := range n {
+			bs = append(bs, byte(d))
+		}
+		return bs, err
+	}
+
 	b, err := base58.Decode(address)
 	if err != nil {
 		return nil, err

@@ -93,7 +93,7 @@ func (e *EthLib) GetBalance(address string) (*big.Int, error) {
 }
 
 // 创建账号
-func (e *EthLib) GeneratePrivateKey() ([]byte, error) {
+func (e *EthLib) GenPriKey() ([]byte, error) {
 	//Create an account
 	key, err := crypto.GenerateKey()
 	if err != nil {

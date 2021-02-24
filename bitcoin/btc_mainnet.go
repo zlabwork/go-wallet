@@ -16,7 +16,7 @@ var (
 )
 
 // https://learnmeabitcoin.com/technical/private-key
-func GeneratePrivateKey() []byte {
+func GenPriKey() []byte {
 	// TODO :: 私钥值约束，最大不能大于 fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140
 	b := make([]byte, 32)
 	rand.Read(b)
@@ -24,12 +24,12 @@ func GeneratePrivateKey() []byte {
 }
 
 // https://learnmeabitcoin.com/technical/public-key
-func GeneratePublicKey(priKey []byte) []byte {
+func GenPubKey(priKey []byte) []byte {
 	curve.ScalarBaseMult(priKey)
 	return compressPublicKey(curve.ScalarBaseMult(priKey))
 }
 
-func GeneratePublicKeyUncompressed(priKey []byte) []byte {
+func GenPubKeyUncompressed(priKey []byte) []byte {
 	curve.ScalarBaseMult(priKey)
 	return uncompressedPublicKey(curve.ScalarBaseMult(priKey))
 }

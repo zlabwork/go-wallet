@@ -7,8 +7,8 @@ go get github.com/zlabwork/go-chain
 ```golang
 import "github.com/zlabwork/go-chain/bitcoin"
 
-priKey := bitcoin.GeneratePrivateKey()
-pubKey := bitcoin.GeneratePublicKey(priKey)
+priKey := bitcoin.GenPriKey()
+pubKey := bitcoin.GenPubKey(priKey)
 address1 := bitcoin.P2PKH(pubKey)
 address2 := bitcoin.P2SH(pubKey)
 ```
@@ -18,7 +18,7 @@ address2 := bitcoin.P2SH(pubKey)
 import "github.com/zlabwork/go-chain/ethereum"
 
 lib := ethereum.NewEthLib()
-priKey, _ := lib.GeneratePrivateKey()
+priKey, _ := lib.GenPriKey()
 address, _ := lib.GetAddress(priKey)
 
 // 测试网络

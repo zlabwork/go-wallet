@@ -98,6 +98,20 @@ func Segwit(pubKey []byte) string {
     return addr
 }
 
+func BrainWallet(words, salt string, compressed bool) string {
+    priKey, err := hashSha256([]byte(words + salt))
+    if err != nil {
+        return ""
+    }
+    var pubKey []byte
+    if !compressed {
+        pubKey = GenPubKeyUncompressed(priKey)
+    } else {
+        pubKey = GenPubKey(priKey)
+    }
+    return P2PKH(pubKey)
+}
+
 func Addr2Hash160(address string) ([]byte, error) {
     if address[0:2] == "bc" {
         _, n, err := bech32.SegwitAddrDecode("bc", address)

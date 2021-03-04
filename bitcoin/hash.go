@@ -30,21 +30,21 @@ func hash160(data []byte) ([]byte, error) {
 }
 
 func hashRipeMD160(data []byte) ([]byte, error) {
-    hasher := ripemd160.New()
-    _, err := io.WriteString(hasher, string(data))
+    h := ripemd160.New()
+    _, err := io.WriteString(h, string(data))
     if err != nil {
         return nil, err
     }
-    return hasher.Sum(nil), nil
+    return h.Sum(nil), nil
 }
 
 func hashSha256(data []byte) ([]byte, error) {
-    hasher := sha256.New()
-    _, err := hasher.Write(data)
+    h := sha256.New()
+    _, err := h.Write(data)
     if err != nil {
         return nil, err
     }
-    return hasher.Sum(nil), nil
+    return h.Sum(nil), nil
 }
 
 func hashDoubleSha256(data []byte) ([]byte, error) {

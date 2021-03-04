@@ -32,3 +32,4 @@ lib.Connect("http://127.0.0.1:8545")
 
 ## docs
 [BCH地址规则](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)
+[https://github.com/gcash/bchutil](https://github.com/gcash/bchutil)

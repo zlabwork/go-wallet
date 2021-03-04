@@ -29,3 +29,6 @@ lib.Connect("http://127.0.0.1:8545")
 // lib.Connect("https://mainnet.infura.io/v3/xxxxxxxx")
 // lib.Connect("wss://mainnet.infura.io/ws/v3/xxxxxxxx")
 ```
+
+## docs
+[BCH地址规则](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)

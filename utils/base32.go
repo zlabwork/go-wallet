@@ -33,8 +33,8 @@ func Base32Encode2(data []byte, padding bool) (string, error) {
     bits := 5
 
     // TODO::填充
-    if !padding && len(data)%5 != 0 {
-        return "", errors.New("length error when no padding")
+    if len(data)%5 != 0 {
+        return "", errors.New("no padding")
     }
 
     var ret bytes.Buffer

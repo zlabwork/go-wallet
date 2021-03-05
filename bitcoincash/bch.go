@@ -29,20 +29,26 @@ type addressData struct {
 }
 
 type priKeyData struct {
+    key []byte
 }
 
 type pubKeyData struct {
+    key []byte
 }
 
-func NewPriKey() []byte {
+func NewPriKey() *priKeyData {
     b := make([]byte, 32)
     rand.Read(b)
-    return b
+    return &priKeyData{
+        key: b,
+    }
 }
 
-func NewPubKey(priKey []byte) []byte {
+func NewPubKey(priKey []byte) *pubKeyData {
     curve.ScalarBaseMult(priKey)
-    return compressPublicKey(curve.ScalarBaseMult(priKey))
+    return &pubKeyData{
+        key: compressPublicKey(curve.ScalarBaseMult(priKey)),
+    }
 }
 
 func NewAddress(pubKey []byte) *addressData {
@@ -51,6 +57,22 @@ func NewAddress(pubKey []byte) *addressData {
         hash:   h[:ripemd160.Size],
         prefix: "bitcoincash", // bchreg、bchtest、bchsim
     }
+}
+
+func (pri *priKeyData) Key() []byte {
+    return pri.key
+}
+
+func (pri *priKeyData) PubKey() *pubKeyData {
+    return NewPubKey(pri.key)
+}
+
+func (pub *pubKeyData) Key() []byte {
+    return pub.key
+}
+
+func (pub *pubKeyData) Address() *addressData {
+    return NewAddress(pub.key)
 }
 
 func (addr *addressData) String() string {

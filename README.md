@@ -7,11 +7,21 @@ go get github.com/zlabwork/go-chain
 ```golang
 import "github.com/zlabwork/go-chain/bitcoin"
 
-priKey := bitcoin.GenPriKey()
-pubKey := bitcoin.GenPubKey(priKey)
-address1 := bitcoin.P2PKH(pubKey)
-address2 := bitcoin.P2SH(pubKey)
+priKey := bitcoin.NewPriKeyRandom()
+priKey.WIF() // L211iZmidtxLQ2s7hzM9BYacPUu2asT1KkCkyrTbNbDib2N85ai5
+pubKey := priKey.PubKey()
+address1 := pubKey.Address().P2PKH() // 19c4pkCL2jvTFYkZXDyUHi4ceoNze44mXE
+address2 := pubKey.Address().P2SH()  // 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
 ```
+
+
+## bitcoincash
+```golang
+priKey := bitcoincash.NewPriKeyRandom()
+address := priKey.PubKey().Address().P2PKH()
+log.Println(address) // qzz6eq5we2qdxg29jkzxkxafc34xhduk7vhayz3z06
+```
+
 
 ## ethereum
 ```golang

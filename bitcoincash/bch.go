@@ -36,11 +36,17 @@ type pubKeyData struct {
     key []byte
 }
 
-func NewPriKey() *priKeyData {
+func NewPriKeyRandom() *priKeyData {
     b := make([]byte, 32)
     rand.Read(b)
     return &priKeyData{
         key: b,
+    }
+}
+
+func NewPriKey(priKey []byte) *priKeyData {
+    return &priKeyData{
+        key: priKey,
     }
 }
 

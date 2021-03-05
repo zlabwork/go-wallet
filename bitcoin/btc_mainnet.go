@@ -12,33 +12,111 @@ import (
 
 var (
     curve                     = btcutil.Secp256k1()
-    PublicKeyCompressedLength = 33
+    publicKeyCompressedLength = 33
 )
 
-// https://learnmeabitcoin.com/technical/private-key
-func GenPriKey() []byte {
-    // TODO :: 私钥值约束，最大不能大于 fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140
+type addrData struct {
+    hash []byte
+}
+
+type priKeyData struct {
+    key []byte
+}
+
+type pubKeyData struct {
+    key []byte
+}
+
+// TODO :: 私钥值约束，最大不能大于 fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140
+func NewPriKeyRandom() *priKeyData {
     b := make([]byte, 32)
     rand.Read(b)
-    return b
+    return &priKeyData{
+        key: b,
+    }
+}
+
+// https://learnmeabitcoin.com/technical/private-key
+func NewPriKey(priKey []byte) *priKeyData {
+    return &priKeyData{
+        key: priKey,
+    }
 }
 
 // https://learnmeabitcoin.com/technical/public-key
-func GenPubKey(priKey []byte) []byte {
+func NewPubKey(priKey []byte) *pubKeyData {
     curve.ScalarBaseMult(priKey)
-    return compressPublicKey(curve.ScalarBaseMult(priKey))
+    return &pubKeyData{
+        key: compressPublicKey(curve.ScalarBaseMult(priKey)),
+    }
 }
 
-func GenPubKeyUncompressed(priKey []byte) []byte {
+func NewPubKeyUncompressed(priKey []byte) *pubKeyData {
     curve.ScalarBaseMult(priKey)
-    return uncompressedPublicKey(curve.ScalarBaseMult(priKey))
+    return &pubKeyData{
+        key: uncompressedPublicKey(curve.ScalarBaseMult(priKey)),
+    }
+}
+
+func NewBrainWallet(words, salt string) (*priKeyData, error) {
+    priKey, err := hashSha256([]byte(words + salt))
+    if err != nil {
+        return nil, err
+    }
+    return &priKeyData{
+        key: priKey,
+    }, nil
+}
+
+// parse WIF
+func ParseWIF(wif string) (*priKeyData, error) {
+    b, err := base58.Decode(wif)
+    if err != nil {
+        return nil, err
+    }
+    if len(b) < 33 {
+        return nil, errors.New("error WIF data")
+    }
+    return NewPriKey(b[1:33]), nil
+}
+
+func ParseAddress(addr string) (*addrData, error) {
+    if addr[0:2] == "bc" {
+        _, n, err := bech32.SegwitAddrDecode("bc", addr)
+        if err != nil {
+            return nil, err
+        }
+        var bs []byte
+        for _, d := range n {
+            bs = append(bs, byte(d))
+        }
+        return &addrData{hash: bs}, err
+    }
+
+    b, err := base58.Decode(addr)
+    if err != nil {
+        return nil, err
+    }
+    return &addrData{hash: b[1:21]}, nil
+}
+
+func (pri *priKeyData) Key() []byte {
+    return pri.key
+}
+
+func (pri *priKeyData) PubKey() *pubKeyData {
+    return NewPubKey(pri.key)
+}
+
+func (pri *priKeyData) PubKeyUncompressed() *pubKeyData {
+    return NewPubKeyUncompressed(pri.key)
 }
 
 // https://learnmeabitcoin.com/technical/wif
-func WIF(priKey []byte) string {
+func (pri *priKeyData) WIF() string {
     version := []byte{0x80}
     compression := byte(0x01)
-    key := append(version, priKey...)
+    key := append(version, pri.key...)
     key = append(key, compression)
     sum, err := checksum(key)
     if err != nil {
@@ -48,88 +126,50 @@ func WIF(priKey []byte) string {
     return base58.Encode(key)
 }
 
-// parse WIF
-func ParseWIF(wif string) ([]byte, error) {
-    b, err := base58.Decode(wif)
-    if err != nil {
-        return nil, err
+func (pub *pubKeyData) Key() []byte {
+    return pub.key
+}
+
+func (pub *pubKeyData) Address() *addrData {
+    h, _ := hash160(pub.key)
+    return &addrData{
+        hash: h,
     }
-    if len(b) < 33 {
-        return nil, errors.New("error WIF data")
-    }
-    return b[1:33], nil
+}
+
+func (addr *addrData) Hash160() []byte {
+    return addr.hash
 }
 
 // @docs https://learnmeabitcoin.com/technical/public-key-hash
 // @docs https://learnmeabitcoin.com/technical/address
-func P2PKH(pubKey []byte) string {
-    h, _ := hash160(pubKey)
-
+func (addr *addrData) P2PKH() string {
     prefix := []byte{0x00}
-    preData := append(prefix, h...)
+    preData := append(prefix, addr.hash...)
     sum, _ := checksum(preData)
-    addr := append(preData, sum...)
-
-    return base58.Encode(addr)
+    address := append(preData, sum...)
+    return base58.Encode(address)
 }
 
-func P2SH(pubKey []byte) string {
-    h, _ := hash160(pubKey)
-
+func (addr *addrData) P2SH() string {
     prefix := []byte{0x05}
-    preData := append(prefix, h...)
+    preData := append(prefix, addr.hash...)
     sum, _ := checksum(preData)
-    addr := append(preData, sum...)
-
-    return base58.Encode(addr)
+    address := append(preData, sum...)
+    return base58.Encode(address)
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
-func Segwit(pubKey []byte) string {
-    h, _ := hash160(pubKey)
+func (addr *addrData) Segwit() string {
     var program []int
-    for _, i := range h {
+    for _, i := range addr.hash {
         program = append(program, int(i))
     }
-    addr, err := bech32.SegwitAddrEncode("bc", 0, program)
+    address, err := bech32.SegwitAddrEncode("bc", 0, program)
     if err != nil {
         return ""
     }
-    return addr
-}
-
-func BrainWallet(words, salt string, compressed bool) string {
-    priKey, err := hashSha256([]byte(words + salt))
-    if err != nil {
-        return ""
-    }
-    var pubKey []byte
-    if !compressed {
-        pubKey = GenPubKeyUncompressed(priKey)
-    } else {
-        pubKey = GenPubKey(priKey)
-    }
-    return P2PKH(pubKey)
-}
-
-func Addr2Hash160(address string) ([]byte, error) {
-    if address[0:2] == "bc" {
-        _, n, err := bech32.SegwitAddrDecode("bc", address)
-        if err != nil {
-            return nil, err
-        }
-        var bs []byte
-        for _, d := range n {
-            bs = append(bs, byte(d))
-        }
-        return bs, err
-    }
-
-    b, err := base58.Decode(address)
-    if err != nil {
-        return nil, err
-    }
-    return b[1:21], nil
+    return address
 }
 
 func compressPublicKey(x *big.Int, y *big.Int) []byte {
@@ -140,7 +180,7 @@ func compressPublicKey(x *big.Int, y *big.Int) []byte {
 
     // Write X coord; Pad the key so x is aligned with the LSB. Pad size is key length - header size (1) - xBytes size
     xBytes := x.Bytes()
-    for i := 0; i < (PublicKeyCompressedLength - 1 - len(xBytes)); i++ {
+    for i := 0; i < (publicKeyCompressedLength - 1 - len(xBytes)); i++ {
         key.WriteByte(0x0)
     }
     key.Write(xBytes)

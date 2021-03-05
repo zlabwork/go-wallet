@@ -4,10 +4,10 @@ import (
     "github.com/mr-tron/base58"
 )
 
-func TestNetWIF(priKey []byte) string {
+func (pri *priKeyData) TestNetWIF() string {
     version := []byte{0xef}
     compression := byte(0x01)
-    key := append(version, priKey...)
+    key := append(version, pri.key...)
     key = append(key, compression)
     sum, err := checksum(key)
     if err != nil {
@@ -17,24 +17,22 @@ func TestNetWIF(priKey []byte) string {
     return base58.Encode(key)
 }
 
-func TestNetP2PKH(pubKey []byte) string {
-    h, _ := hash160(pubKey)
+func (addr *addrData) TestNetP2PKH() string {
 
     prefix := []byte{0x6f}
-    preData := append(prefix, h...)
+    preData := append(prefix, addr.hash...)
     sum, _ := checksum(preData)
-    addr := append(preData, sum...)
+    address := append(preData, sum...)
 
-    return base58.Encode(addr)
+    return base58.Encode(address)
 }
 
-func TestNetP2SH(pubKey []byte) string {
-    h, _ := hash160(pubKey)
+func (addr *addrData) TestNetP2SH() string {
 
     prefix := []byte{0xc4}
-    preData := append(prefix, h...)
+    preData := append(prefix, addr.hash...)
     sum, _ := checksum(preData)
-    addr := append(preData, sum...)
+    address := append(preData, sum...)
 
-    return base58.Encode(addr)
+    return base58.Encode(address)
 }

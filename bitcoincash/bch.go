@@ -11,8 +11,8 @@ import (
 )
 
 const (
-    addrTypeP2PKH             AddrType = 0
-    addrTypeP2SH              AddrType = 1
+    addrTypeP2PKH             addrType = 0
+    addrTypeP2SH              addrType = 1
     publicKeyCompressedLength          = 33
     charset                            = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 )
@@ -21,17 +21,17 @@ var (
     curve = btcutil.Secp256k1()
 )
 
-type AddrType int
+type addrType int
 
-type AddressData struct {
+type addressData struct {
     hash   []byte
     prefix string
 }
 
-type PriKeyData struct {
+type priKeyData struct {
 }
 
-type PubKeyData struct {
+type pubKeyData struct {
 }
 
 func NewPriKey() []byte {
@@ -45,31 +45,31 @@ func NewPubKey(priKey []byte) []byte {
     return compressPublicKey(curve.ScalarBaseMult(priKey))
 }
 
-func NewAddress(pubKey []byte) *AddressData {
+func NewAddress(pubKey []byte) *addressData {
     h, _ := hash160(pubKey)
-    return &AddressData{
+    return &addressData{
         hash:   h[:ripemd160.Size],
         prefix: "bitcoincash", // bchreg、bchtest、bchsim
     }
 }
 
-func (addr *AddressData) String() string {
+func (addr *addressData) String() string {
     return addr.P2PKH()
 }
 
-func (addr *AddressData) Hash160() []byte {
+func (addr *addressData) Hash160() []byte {
     return addr.hash
 }
 
-func (addr *AddressData) P2PKH() string {
+func (addr *addressData) P2PKH() string {
     return newCashAddress(addr.hash, addr.prefix, addrTypeP2PKH)
 }
 
-func (addr *AddressData) P2SH() string {
+func (addr *addressData) P2SH() string {
     return newCashAddress(addr.hash, addr.prefix, addrTypeP2SH)
 }
 
-func newCashAddress(input []byte, prefix string, t AddrType) string {
+func newCashAddress(input []byte, prefix string, t addrType) string {
     k, err := packAddressData(t, input)
     if err != nil {
         return ""
@@ -77,7 +77,7 @@ func newCashAddress(input []byte, prefix string, t AddrType) string {
     return encode(prefix, k)
 }
 
-func packAddressData(addrType AddrType, addrHash []byte) ([]byte, error) {
+func packAddressData(addrType addrType, addrHash []byte) ([]byte, error) {
     // Pack addr data with version byte.
     if addrType != addrTypeP2PKH && addrType != addrTypeP2SH {
         return nil, errors.New("invalid AddressType")

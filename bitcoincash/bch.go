@@ -5,6 +5,7 @@ import (
     "crypto/rand"
     "errors"
     btcutil "github.com/FactomProject/btcutilecc"
+    "github.com/mr-tron/base58"
     "github.com/zlabwork/go-chain/utils"
     "golang.org/x/crypto/ripemd160"
     "math/big"
@@ -44,17 +45,23 @@ func NewPriKeyRandom() *priKeyData {
     }
 }
 
-func NewPriKey(priKey []byte) *priKeyData {
+func NewPriKey(priKey []byte) (*priKeyData, error) {
+    if len(priKey) < 32 {
+        return nil, errors.New("invalid length")
+    }
     return &priKeyData{
         key: priKey,
-    }
+    }, nil
 }
 
-func NewPubKey(priKey []byte) *pubKeyData {
+func NewPubKey(priKey []byte) (*pubKeyData, error) {
+    if len(priKey) < 32 {
+        return nil, errors.New("invalid length")
+    }
     curve.ScalarBaseMult(priKey)
     return &pubKeyData{
         key: compressPublicKey(curve.ScalarBaseMult(priKey)),
-    }
+    }, nil
 }
 
 func NewAddress(pubKey []byte) *addressData {
@@ -65,12 +72,28 @@ func NewAddress(pubKey []byte) *addressData {
     }
 }
 
+// parse WIF
+func ParseWIF(wif string) (*priKeyData, error) {
+    b, err := base58.Decode(wif)
+    if err != nil {
+        return nil, err
+    }
+    if len(b) < 33 {
+        return nil, errors.New("invalid WIF data")
+    }
+    return NewPriKey(b[1:33])
+}
+
 func (pri *priKeyData) Key() []byte {
     return pri.key
 }
 
 func (pri *priKeyData) PubKey() *pubKeyData {
-    return NewPubKey(pri.key)
+    pub, err := NewPubKey(pri.key)
+    if err != nil {
+        return nil
+    }
+    return pub
 }
 
 func (pub *pubKeyData) Key() []byte {

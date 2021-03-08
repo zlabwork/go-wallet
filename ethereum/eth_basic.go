@@ -1,6 +1,9 @@
 package ethereum
 
-import "github.com/ethereum/go-ethereum/crypto"
+import (
+    "errors"
+    "github.com/ethereum/go-ethereum/crypto"
+)
 
 type priKeyData struct {
     key []byte
@@ -20,8 +23,11 @@ func NewPriKeyRandom() *priKeyData {
     return &priKeyData{key: key.D.Bytes()}
 }
 
-func NewPriKey(priKey []byte) *priKeyData {
-    return &priKeyData{key: priKey}
+func NewPriKey(priKey []byte) (*priKeyData, error) {
+    if len(priKey) != 32 {
+        return nil, errors.New("invalid length")
+    }
+    return &priKeyData{key: priKey}, nil
 }
 
 func (pri *priKeyData) Key() []byte {

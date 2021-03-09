@@ -3,6 +3,8 @@ package bitcoin
 import (
     "bytes"
     "crypto/rand"
+    "encoding/base64"
+    "encoding/hex"
     "errors"
     "github.com/FactomProject/btcutilecc"
     "github.com/mr-tron/base58"
@@ -157,6 +159,14 @@ func (pri *priKeyData) WIF() string {
     }
     key = append(key, sum...)
     return base58.Encode(key)
+}
+
+func (pri *priKeyData) Base64() string {
+    return base64.StdEncoding.EncodeToString(pri.key)
+}
+
+func (pri *priKeyData) Hex() string {
+    return hex.EncodeToString(pri.key)
 }
 
 func (pub *pubKeyData) Key() []byte {

@@ -41,5 +41,8 @@ lib.Connect("http://127.0.0.1:8545")
 ```
 
 ## docs
+[椭圆曲线文档](http://www.secg.org/sec2-v2.pdf)  
+[椭圆曲线图形](https://www.desmos.com/calculator/ialhd71we3?lang=zh-CN)  
+[Graphical Address Generator](https://www.royalfork.org/2014/08/11/graphical-address-generator)  
 [BCH地址规则](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)  
 [https://github.com/gcash/bchutil](https://github.com/gcash/bchutil)  

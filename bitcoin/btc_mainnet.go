@@ -13,6 +13,7 @@ import (
 var (
     curve                     = btcutil.Secp256k1()
     publicKeyCompressedLength = 33
+    hashConst, _              = hashSha256([]byte("zlab")) // hash 常量
 )
 
 type addrData struct {
@@ -67,8 +68,23 @@ func NewPubKeyUncompressed(priKey []byte) (*pubKeyData, error) {
     }, nil
 }
 
+// 脑钱包
 func NewBrainWallet(words, salt string) (*priKeyData, error) {
     priKey, err := hashSha256([]byte(words + salt))
+    if err != nil {
+        return nil, err
+    }
+    return &priKeyData{
+        key: priKey,
+    }, nil
+}
+
+// 脑钱包 - 非通用方法
+func NewBrainWalletSpecial(words, salt string) (*priKeyData, error) {
+    wh, _ := hashSha256([]byte(words))
+    sh, _ := hashSha256([]byte(salt))
+    bs := append(append(wh, sh...), hashConst...)
+    priKey, err := hashSha256(bs)
     if err != nil {
         return nil, err
     }

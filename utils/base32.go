@@ -25,7 +25,7 @@ func Base32Encode(data []byte, padding bool) (string, error) {
 }
 
 // @deprecated
-// 自写函数实现暂时废弃
+// Deprecated: 自写函数实现暂时废弃
 func Base32Encode2(data []byte, padding bool) (string, error) {
     bits := 5
 

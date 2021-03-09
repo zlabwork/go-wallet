@@ -58,7 +58,6 @@ func NewPubKey(priKey []byte) (*pubKeyData, error) {
     if len(priKey) < 32 {
         return nil, errors.New("invalid length")
     }
-    curve.ScalarBaseMult(priKey)
     return &pubKeyData{
         key: compressPublicKey(curve.ScalarBaseMult(priKey)),
     }, nil

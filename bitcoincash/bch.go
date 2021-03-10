@@ -46,7 +46,7 @@ func NewPriKeyRandom() *priKeyData {
 }
 
 func NewPriKey(priKey []byte) (*priKeyData, error) {
-    if len(priKey) < 32 {
+    if len(priKey) != 32 {
         return nil, errors.New("invalid length")
     }
     return &priKeyData{
@@ -55,7 +55,7 @@ func NewPriKey(priKey []byte) (*priKeyData, error) {
 }
 
 func NewPubKey(priKey []byte) (*pubKeyData, error) {
-    if len(priKey) < 32 {
+    if len(priKey) != 32 {
         return nil, errors.New("invalid length")
     }
     return &pubKeyData{

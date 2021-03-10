@@ -41,7 +41,7 @@ func NewPriKeyRandom() *priKeyData {
 
 // https://learnmeabitcoin.com/technical/private-key
 func NewPriKey(priKey []byte) (*priKeyData, error) {
-    if len(priKey) < 32 {
+    if len(priKey) != 32 {
         return nil, errors.New("invalid length")
     }
     return &priKeyData{
@@ -51,7 +51,7 @@ func NewPriKey(priKey []byte) (*priKeyData, error) {
 
 // https://learnmeabitcoin.com/technical/public-key
 func NewPubKey(priKey []byte) (*pubKeyData, error) {
-    if len(priKey) < 32 {
+    if len(priKey) != 32 {
         return nil, errors.New("invalid length")
     }
     return &pubKeyData{
@@ -60,7 +60,7 @@ func NewPubKey(priKey []byte) (*pubKeyData, error) {
 }
 
 func NewPubKeyUncompressed(priKey []byte) (*pubKeyData, error) {
-    if len(priKey) < 32 {
+    if len(priKey) != 32 {
         return nil, errors.New("invalid length")
     }
     return &pubKeyData{

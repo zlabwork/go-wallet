@@ -2,7 +2,7 @@
 ```bash
 go get github.com/zlabwork/go-chain
 
-go get github.com/zlabwork/go-chain@v1.0.1
+go get github.com/zlabwork/go-chain@v1.1.0
 ```
 ## bitcoin
 ```golang
@@ -41,9 +41,16 @@ lib.Connect("http://127.0.0.1:8545")
 // lib.Connect("wss://mainnet.infura.io/ws/v3/xxxxxxxx")
 ```
 
+## 钱包工具
+* http://webhdwallet.github.io/  
+* https://iancoleman.io/bip39/  
+* https://www.bitaddress.org/  
+
+
 ## docs
 [椭圆曲线文档](http://www.secg.org/sec2-v2.pdf)  
 [椭圆曲线图形](https://www.desmos.com/calculator/ialhd71we3?lang=zh-CN)  
 [Graphical Address Generator](https://www.royalfork.org/2014/08/11/graphical-address-generator)  
 [BCH地址规则](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)  
 [https://github.com/gcash/bchutil](https://github.com/gcash/bchutil)  
+[bip-0044](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)  

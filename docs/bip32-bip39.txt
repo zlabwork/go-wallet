@@ -14,7 +14,7 @@ func main() {
     // 1. 生成助记词
     entropy, _ := bip39.NewEntropy(128)
     mnemonic, _ := bip39.NewMnemonic(entropy)
-    log.Println("助记词: ", mnemonic) // "youth very amazing tiny minimum bronze firm brass jungle truck fringe snap"
+    fmt.Println("助记词:", mnemonic) // "youth very amazing tiny minimum bronze firm brass jungle truck fringe snap"
 
     // 2. 验证助记词
     if !bip39.IsMnemonicValid(mnemonic) {
@@ -29,13 +29,14 @@ func main() {
 
     // 注: 多数HD钱包使用空密码
     seed := bip39.NewSeed(mnemonic, "") // custom passphrase
-    log.Println("种子: ", hex.EncodeToString(seed))
+    fmt.Println("种子:", hex.EncodeToString(seed))
+    fmt.Println("\n**************************************")
 
     // 4. 主秘钥
     masterKey, _ := bip32.NewMasterKey(seed)
     publicKey := masterKey.PublicKey()
-    log.Println("ROOT XPRV: ", masterKey)
-    log.Println("ROOT XPUB: ", publicKey)
+    fmt.Println("root xprv:", masterKey)
+    fmt.Println("root xpub:", publicKey)
 
     // 4. 子秘钥
     key, _ := masterKey.NewChildKey(uint32(0x80000000) + 44) // m/44'
@@ -44,15 +45,15 @@ func main() {
 
     // @see https://iancoleman.io/bip39/
     fmt.Println("\n********** m/44'/0'/0'     **********")
-    log.Println("账户拓展私钥:", key.String())
-    log.Println("账户拓展公钥:", key.PublicKey().String())
+    fmt.Println("account xprv:", key.String())
+    fmt.Println("account xpub:", key.PublicKey().String())
 
-    key, _ = key.NewChildKey(uint32(0))                      // m/44'/0'/0'/0
-    key, _ = key.NewChildKey(uint32(0))                      // m/44'/0'/0'/0/0
+    key, _ = key.NewChildKey(uint32(0)) // m/44'/0'/0'/0
+    key, _ = key.NewChildKey(uint32(0)) // m/44'/0'/0'/0/0
 
     fmt.Println("\n********** m/44'/0'/0'/0/0 **********")
-    log.Println("子私钥:", hex.EncodeToString(key.Key))
-    log.Println("子公钥:", hex.EncodeToString(key.PublicKey().Key))
+    fmt.Println("私钥:", hex.EncodeToString(key.Key))
+    fmt.Println("公钥:", hex.EncodeToString(key.PublicKey().Key))
     pubKey, _ := bitcoin.NewPubKey(key.PublicKey().Key)
-    log.Println("地址:", pubKey.Address().P2PKH())
+    fmt.Println("地址:", pubKey.Address().P2PKH())
 }

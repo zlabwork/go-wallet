@@ -54,23 +54,6 @@ func NewPriKey(priKey []byte) (*priKeyData, error) {
     }, nil
 }
 
-func NewPubKey(priKey []byte) (*pubKeyData, error) {
-    if len(priKey) != 32 {
-        return nil, errors.New("invalid length")
-    }
-    return &pubKeyData{
-        key: compressPublicKey(curve.ScalarBaseMult(priKey)),
-    }, nil
-}
-
-func NewAddress(pubKey []byte) *addressData {
-    h, _ := hash160(pubKey)
-    return &addressData{
-        hash:   h[:ripemd160.Size],
-        prefix: "bitcoincash", // bchreg、bchtest、bchsim
-    }
-}
-
 // parse WIF
 func ParseWIF(wif string) (*priKeyData, error) {
     b, err := base58.Decode(wif)
@@ -88,11 +71,34 @@ func (pri *priKeyData) Key() []byte {
 }
 
 func (pri *priKeyData) PubKey() *pubKeyData {
-    pub, err := NewPubKey(pri.key)
-    if err != nil {
-        return nil
+    return &pubKeyData{
+        key: pri.compressPublicKey(curve.ScalarBaseMult(pri.key)),
     }
-    return pub
+}
+
+func (pri *priKeyData) compressPublicKey(x *big.Int, y *big.Int) []byte {
+    var key bytes.Buffer
+
+    // Write header; 0x2 for even y value; 0x3 for odd
+    key.WriteByte(byte(0x2) + byte(y.Bit(0)))
+
+    // Write X coord; Pad the key so x is aligned with the LSB. Pad size is key length - header size (1) - xBytes size
+    xBytes := x.Bytes()
+    for i := 0; i < (publicKeyCompressedLength - 1 - len(xBytes)); i++ {
+        key.WriteByte(0x0)
+    }
+    key.Write(xBytes)
+
+    return key.Bytes()
+}
+
+func NewPubKey(pubKey []byte) (*pubKeyData, error) {
+    if len(pubKey) == 33 || len(pubKey) == 65 {
+        return &pubKeyData{
+            key: pubKey,
+        }, nil
+    }
+    return nil, errors.New("invalid length")
 }
 
 func (pub *pubKeyData) Key() []byte {
@@ -100,11 +106,11 @@ func (pub *pubKeyData) Key() []byte {
 }
 
 func (pub *pubKeyData) Address() *addressData {
-    return NewAddress(pub.key)
-}
-
-func (addr *addressData) String() string {
-    return addr.P2PKH()
+    h, _ := hash160(pub.key)
+    return &addressData{
+        hash:   h[:ripemd160.Size],
+        prefix: "bitcoincash", // bchreg、bchtest、bchsim
+    }
 }
 
 func (addr *addressData) Hash160() []byte {
@@ -217,20 +223,4 @@ func expandPrefix(prefix string) []byte {
 
 func cat(x, y []byte) []byte {
     return append(x, y...)
-}
-
-func compressPublicKey(x *big.Int, y *big.Int) []byte {
-    var key bytes.Buffer
-
-    // Write header; 0x2 for even y value; 0x3 for odd
-    key.WriteByte(byte(0x2) + byte(y.Bit(0)))
-
-    // Write X coord; Pad the key so x is aligned with the LSB. Pad size is key length - header size (1) - xBytes size
-    xBytes := x.Bytes()
-    for i := 0; i < (publicKeyCompressedLength - 1 - len(xBytes)); i++ {
-        key.WriteByte(0x0)
-    }
-    key.Write(xBytes)
-
-    return key.Bytes()
 }

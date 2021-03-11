@@ -1,7 +1,8 @@
 ## 安装
 ```bash
 go get github.com/zlabwork/go-chain
-# or use this lib with go.mod
+
+go get github.com/zlabwork/go-chain@v1.0.1
 ```
 ## bitcoin
 ```golang

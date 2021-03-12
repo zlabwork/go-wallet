@@ -12,6 +12,7 @@ import (
 func main() {
 
     // 1. 生成助记词
+    bip39.SetWordList(docs.WordList().ChineseSimple())
     entropy, _ := bip39.NewEntropy(128)
     mnemonic, _ := bip39.NewMnemonic(entropy)
     fmt.Println("助记词:", mnemonic) // "youth very amazing tiny minimum bronze firm brass jungle truck fringe snap"

@@ -202,19 +202,11 @@ func (addr *addrData) Hash160() []byte {
 // @docs https://learnmeabitcoin.com/technical/public-key-hash
 // @docs https://learnmeabitcoin.com/technical/address
 func (addr *addrData) P2PKH() string {
-    prefix := []byte{0x00}
-    preData := append(prefix, addr.hash...)
-    sum, _ := checksum(preData)
-    address := append(preData, sum...)
-    return base58.Encode(address)
+    return p2pkh(addr.hash)
 }
 
 func (addr *addrData) P2SH() string {
-    prefix := []byte{0x05}
-    preData := append(prefix, addr.hash...)
-    sum, _ := checksum(preData)
-    address := append(preData, sum...)
-    return base58.Encode(address)
+    return p2sh(addr.hash)
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
@@ -233,16 +225,12 @@ func (addr *addrData) P2WPKH() string {
 // P2SH-P2WPKH
 func (addr *addrData) P2SHP2WPKH() string {
     // OP_0 size hash160
-    pre := []byte{0x00, 0x14}
+    pre := []byte{OP_0, 0x14}
     redeem := append(pre, addr.hash...)
 
     // P2SH
-    data := []byte{0x05}
     ha, _ := hash160(redeem)
-    data = append(data, ha...)
-    sum, _ := checksum(data)
-    data = append(data, sum...)
-    return base58.Encode(data)
+    return p2sh(ha)
 }
 
 // P2SH-P2WSH
@@ -268,7 +256,18 @@ func P2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
     hash160, _ := hash160(append([]byte{OP_0, len32}, ha...))
 
     // P2SH
+    return p2sh(hash160), nil
+}
+
+// hash160
+func p2sh(hash160 []byte) string {
     data := append([]byte{0x05}, hash160...)
     sum, _ := checksum(data)
-    return base58.Encode(append(data, sum...)), nil
+    return base58.Encode(append(data, sum...))
+}
+
+func p2pkh(hash160 []byte) string {
+    data := append([]byte{0x00}, hash160...)
+    sum, _ := checksum(data)
+    return base58.Encode(append(data, sum...))
 }

@@ -63,6 +63,7 @@ lib.Connect("http://127.0.0.1:8545")
 
 ## Tools
 [椭圆曲线图形](https://www.desmos.com/calculator/ialhd71we3?lang=zh-CN)  
+[SegWit address format](http://bitcoin.sipa.be/bech32/demo/demo.html)  
 
 
 ## Similar Tools 

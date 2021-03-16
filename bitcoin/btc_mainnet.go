@@ -215,6 +215,7 @@ func (addr *addrData) P2SH() string {
     return p2sh(addr.hash)
 }
 
+// Native Address
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 func (addr *addrData) P2WPKH() (string, error) {
     var program []int
@@ -229,6 +230,7 @@ func (addr *addrData) P2WPKH() (string, error) {
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
+// TODO :: 测试
 func (addr *addrData) P2WSH() (string, error) {
     if addr.pubKey == nil {
         return "", errors.New("pubKey is not specified")
@@ -248,7 +250,8 @@ func (addr *addrData) P2WSH() (string, error) {
     return address, nil
 }
 
-// P2SH-P2WPKH
+// P2SH(P2WPKH)
+// p2sh-segwit
 func (addr *addrData) P2SHP2WPKH() string {
     // OP_0 size hash160
     pre := []byte{OP_0, OP_PUSH_20}

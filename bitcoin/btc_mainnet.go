@@ -234,6 +234,7 @@ func (addr *addrData) P2SHP2WPKH() string {
 }
 
 // P2SH-P2WSH
+// https://bitcoincore.org/en/segwit_wallet_dev/
 func P2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
     if m <= 0 || n <= 0 || m > n {
         return "", errors.New("error OP_M OP_N")
@@ -246,6 +247,9 @@ func P2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
     // redeem
     redeem := []byte{OP_M}
     for i := 0; i < len(pubKey); i++ {
+        if len(pubKey[i]) != 33 {
+            return "", errors.New("public key inside P2SH-P2WSH scripts MUST be compressed key")
+        }
         redeem = append(redeem, len33)
         redeem = append(redeem, pubKey[i]...)
     }

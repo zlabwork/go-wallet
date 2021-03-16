@@ -212,7 +212,7 @@ func (addr *addrData) P2SH() string {
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
-func (addr *addrData) SegWit() string {
+func (addr *addrData) P2WPKH() string {
     var program []int
     for _, i := range addr.hash {
         program = append(program, int(i))
@@ -222,4 +222,19 @@ func (addr *addrData) SegWit() string {
         return ""
     }
     return address
+}
+
+// P2SH-P2WPKH
+func (addr *addrData) P2SHP2WPKH() string {
+    // OP_0 size hash160
+    pre := []byte{0x00, 0x14}
+    redeem := append(pre, addr.hash...)
+
+    // P2SH
+    data := []byte{0x05}
+    ha, _ := hash160(redeem)
+    data = append(data, ha...)
+    sum, _ := checksum(data)
+    data = append(data, sum...)
+    return base58.Encode(data)
 }

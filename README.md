@@ -54,3 +54,8 @@ lib.Connect("http://127.0.0.1:8545")
 [BCH地址规则](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)  
 [https://github.com/gcash/bchutil](https://github.com/gcash/bchutil)  
 [bip-0044](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)  
+[钱包兼容性汇总](https://bitcoinops.org/en/compatibility/)  
+
+
+## bitcoin transaction
+![bitcoin-tx](docs/assets/bitcoin-tx.png)

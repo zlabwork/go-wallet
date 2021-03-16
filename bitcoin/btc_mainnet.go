@@ -15,6 +15,8 @@ import (
 const (
     OP_0             = byte(0x00)
     OP_1             = byte(0x51)
+    OP_PUSH_33       = byte(0x21)
+    OP_CHECKSIG      = byte(0xAC)
     OP_CHECKMULTISIG = byte(0xAE)
 )
 
@@ -25,7 +27,8 @@ var (
 )
 
 type addrData struct {
-    hash []byte
+    hash   []byte
+    pubKey []byte
 }
 
 type priKeyData struct {
@@ -171,7 +174,8 @@ func (pub *pubKeyData) Key() []byte {
 func (pub *pubKeyData) Address() *addrData {
     h, _ := hash160(pub.key)
     return &addrData{
-        hash: h,
+        hash:   h,
+        pubKey: pub.key,
     }
 }
 
@@ -210,16 +214,36 @@ func (addr *addrData) P2SH() string {
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
-func (addr *addrData) P2WPKH() string {
+func (addr *addrData) P2WPKH() (string, error) {
     var program []int
     for _, i := range addr.hash {
         program = append(program, int(i))
     }
     address, err := bech32.SegwitAddrEncode("bc", 0, program)
     if err != nil {
-        return ""
+        return "", err
     }
-    return address
+    return address, nil
+}
+
+// https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
+func (addr *addrData) P2WSH() (string, error) {
+    if addr.pubKey == nil {
+        return "", errors.New("pubKey is not specified")
+    }
+    data := append([]byte{OP_PUSH_33}, addr.pubKey...)
+    data = append(data, OP_CHECKSIG)
+    ha, _ := hashSha256(data)
+
+    var program []int
+    for _, i := range ha {
+        program = append(program, int(i))
+    }
+    address, err := bech32.SegwitAddrEncode("bc", 0, program)
+    if err != nil {
+        return "", err
+    }
+    return address, nil
 }
 
 // P2SH-P2WPKH

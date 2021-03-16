@@ -47,15 +47,27 @@ lib.Connect("http://127.0.0.1:8545")
 * https://www.bitaddress.org/  
 
 
-## docs
+## Docs
 [椭圆曲线文档](http://www.secg.org/sec2-v2.pdf)  
-[椭圆曲线图形](https://www.desmos.com/calculator/ialhd71we3?lang=zh-CN)  
 [Graphical Address Generator](https://www.royalfork.org/2014/08/11/graphical-address-generator)  
+
+##### bch
 [BCH地址规则](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)  
-[https://github.com/gcash/bchutil](https://github.com/gcash/bchutil)  
+[https://github.com/gcash/bchutil](https://github.com/gcash/bchutil)
+
+
+##### wallet
 [bip-0044](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)  
 [钱包兼容性汇总](https://bitcoinops.org/en/compatibility/)  
 
 
-## bitcoin transaction
+## Tools
+[椭圆曲线图形](https://www.desmos.com/calculator/ialhd71we3?lang=zh-CN)  
+
+
+## Similar Tools 
+[python bitcoin-utils](https://pypi.org/project/bitcoin-utils/)  
+
+
+## Bitcoin Transaction
 ![bitcoin-tx](docs/assets/bitcoin-tx.png)

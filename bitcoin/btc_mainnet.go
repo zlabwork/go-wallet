@@ -12,6 +12,12 @@ import (
     "math/big"
 )
 
+const (
+    OP_0             = byte(0x00)
+    OP_1             = byte(0x51)
+    OP_CHECKMULTISIG = byte(0xAE)
+)
+
 var (
     curve                     = btcutil.Secp256k1()
     publicKeyCompressedLength = 33
@@ -237,4 +243,32 @@ func (addr *addrData) P2SHP2WPKH() string {
     sum, _ := checksum(data)
     data = append(data, sum...)
     return base58.Encode(data)
+}
+
+// P2SH-P2WSH
+func P2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
+    if m <= 0 || n <= 0 || m > n {
+        return "", errors.New("error OP_M OP_N")
+    }
+    OP_M := byte(0x50 + m)
+    OP_N := byte(0x50 + n)
+    len32 := byte(0x20)
+    len33 := byte(0x21)
+
+    // redeem
+    redeem := []byte{OP_M}
+    for i := 0; i < len(pubKey); i++ {
+        redeem = append(redeem, len33)
+        redeem = append(redeem, pubKey[i]...)
+    }
+    redeem = append(redeem, OP_N)
+    redeem = append(redeem, OP_CHECKMULTISIG)
+
+    ha, _ := hashSha256(redeem)
+    hash160, _ := hash160(append([]byte{OP_0, len32}, ha...))
+
+    // P2SH
+    data := append([]byte{0x05}, hash160...)
+    sum, _ := checksum(data)
+    return base58.Encode(append(data, sum...)), nil
 }

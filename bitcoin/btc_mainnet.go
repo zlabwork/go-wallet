@@ -15,6 +15,8 @@ import (
 const (
     OP_0             = byte(0x00)
     OP_1             = byte(0x51)
+    OP_PUSH_20       = byte(0x14)
+    OP_PUSH_32       = byte(0x20)
     OP_PUSH_33       = byte(0x21)
     OP_CHECKSIG      = byte(0xAC)
     OP_CHECKMULTISIG = byte(0xAE)
@@ -249,7 +251,7 @@ func (addr *addrData) P2WSH() (string, error) {
 // P2SH-P2WPKH
 func (addr *addrData) P2SHP2WPKH() string {
     // OP_0 size hash160
-    pre := []byte{OP_0, 0x14}
+    pre := []byte{OP_0, OP_PUSH_20}
     redeem := append(pre, addr.hash...)
 
     // P2SH
@@ -265,8 +267,6 @@ func P2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
     }
     OP_M := byte(0x50 + m)
     OP_N := byte(0x50 + n)
-    len32 := byte(0x20)
-    len33 := byte(0x21)
 
     // redeem
     redeem := []byte{OP_M}
@@ -274,14 +274,14 @@ func P2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
         if len(pubKey[i]) != 33 {
             return "", errors.New("public key inside P2SH-P2WSH scripts MUST be compressed key")
         }
-        redeem = append(redeem, len33)
+        redeem = append(redeem, OP_PUSH_33)
         redeem = append(redeem, pubKey[i]...)
     }
     redeem = append(redeem, OP_N)
     redeem = append(redeem, OP_CHECKMULTISIG)
 
     ha, _ := hashSha256(redeem)
-    hash160, _ := hash160(append([]byte{OP_0, len32}, ha...))
+    hash160, _ := hash160(append([]byte{OP_0, OP_PUSH_32}, ha...))
 
     // P2SH
     return p2sh(hash160), nil

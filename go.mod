@@ -8,5 +8,5 @@ require (
 	github.com/mr-tron/base58 v1.2.0
 	github.com/shopspring/decimal v1.2.0
 	github.com/sipa/bech32 v0.0.0-20210203230753-6ec99af97c8a
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
+	golang.org/x/crypto v0.0.0-20210314154223-e6e6c4f2bb5b
 )

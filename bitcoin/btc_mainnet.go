@@ -181,6 +181,10 @@ func (pub *pubKeyData) Address() *addrData {
     }
 }
 
+func (pub *pubKeyData) isCompressed() bool {
+    return len(pub.key) == 33
+}
+
 func ParseAddress(addr string) (*addrData, error) {
     if addr[0:2] == "bc" {
         _, n, err := bech32.SegwitAddrDecode("bc", addr)

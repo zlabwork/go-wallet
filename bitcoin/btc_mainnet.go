@@ -211,6 +211,7 @@ func (addr *addrData) Hash160() []byte {
 
 // @docs https://learnmeabitcoin.com/technical/public-key-hash
 // @docs https://learnmeabitcoin.com/technical/address
+// format: m/44'/0'/0' support: imToken, bitPay
 func (addr *addrData) P2PKH() string {
     return p2pkh(addr.hash)
 }
@@ -221,6 +222,7 @@ func (addr *addrData) P2SH() string {
 
 // Native Address
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
+// format: m/44'/0'/0' support: bitPay
 func (addr *addrData) P2WPKH() (string, error) {
     var program []int
     for _, i := range addr.hash {
@@ -256,6 +258,7 @@ func (addr *addrData) P2WSH() (string, error) {
 
 // P2SH(P2WPKH)
 // p2sh-segwit
+// format: m/49'/0'/0' support: imToken
 func (addr *addrData) P2SHP2WPKH() string {
     // OP_0 size hash160
     pre := []byte{OP_0, OP_PUSH_20}

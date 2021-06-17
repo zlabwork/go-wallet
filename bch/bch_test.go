@@ -1,8 +1,7 @@
-package main
+package bch
 
 import (
     "encoding/hex"
-    "github.com/zlabwork/go-chain/bitcoincash"
     "strings"
     "testing"
 )
@@ -18,8 +17,8 @@ func TestBCHPriKey(t *testing.T) {
 
     bs, _ := hex.DecodeString(bchPri)
 
-    priKey, _ := bitcoincash.NewPriKey(bs)
-    if hex.EncodeToString(priKey.Key()) != strings.ToLower(bchPri) {
+    priKey, _ := NewPriKey(bs)
+    if hex.EncodeToString(priKey.Bytes()) != strings.ToLower(bchPri) {
         t.Error("private key is not matched")
     }
 

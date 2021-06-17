@@ -1,4 +1,4 @@
-module github.com/zlabwork/go-chain
+module github.com/zlabwork/gochain
 
 go 1.14
 

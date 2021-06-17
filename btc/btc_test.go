@@ -1,8 +1,7 @@
-package main
+package btc
 
 import (
     "encoding/hex"
-    "github.com/zlabwork/go-chain/bitcoin"
     "testing"
 )
 
@@ -19,7 +18,7 @@ const (
 )
 
 func TestBTC_PriKeyWif(t *testing.T) {
-    priKey, _ := bitcoin.ParseWIF(btcPriWif)
+    priKey, _ := ParseWIF(btcPriWif)
     if priKey.WIF() != btcPriWif {
         t.Errorf("priKey.WIF() %s", priKey.WIF())
     }
@@ -27,31 +26,31 @@ func TestBTC_PriKeyWif(t *testing.T) {
 
 func TestBTC_Compressed(t *testing.T) {
 
-    priKey := bitcoin.NewPriKeyRandom()
+    priKey := NewPriKeyRandom()
     p1 := priKey.PubKey()
-    p2, _ := bitcoin.NewPubKey(p1.Key())
+    p2, _ := NewPubKey(p1.Bytes())
 
-    if hex.EncodeToString(p1.Key()) != hex.EncodeToString(p2.Key()) {
+    if hex.EncodeToString(p1.Bytes()) != hex.EncodeToString(p2.Bytes()) {
         t.Error("method priKey.PubKey() and NewPubKey() not matched ")
     }
 }
 
 func TestBTC_Uncompressed(t *testing.T) {
 
-    priKey := bitcoin.NewPriKeyRandom()
-    p1 := priKey.PubKeyUncompressed()
-    p2, _ := bitcoin.NewPubKey(p1.Key())
+    priKey := NewPriKeyRandom()
+    p1 := priKey.PubKeyUnCompressed()
+    p2, _ := NewPubKey(p1.Bytes())
 
-    if hex.EncodeToString(p1.Key()) != hex.EncodeToString(p2.Key()) {
+    if hex.EncodeToString(p1.Bytes()) != hex.EncodeToString(p2.Bytes()) {
         t.Error("method priKey.PubKeyUncompressed() and NewPubKey() not matched ")
     }
 }
 
 func TestBTC_P2PKH(t *testing.T) {
 
-    priKey, _ := bitcoin.ParseWIF(btcPriWif)
+    priKey, _ := ParseWIF(btcPriWif)
     pub1 := priKey.PubKey()
-    pub2 := priKey.PubKeyUncompressed()
+    pub2 := priKey.PubKeyUnCompressed()
     if pub1.Address().P2PKH() != btcAddrP2PKH {
         t.Error("error compress address when P2PKH")
     }
@@ -62,9 +61,9 @@ func TestBTC_P2PKH(t *testing.T) {
 
 func TestBTC_P2SH(t *testing.T) {
 
-    priKey, _ := bitcoin.ParseWIF(btcPriWif)
+    priKey, _ := ParseWIF(btcPriWif)
     pub1 := priKey.PubKey()
-    pub2 := priKey.PubKeyUncompressed()
+    pub2 := priKey.PubKeyUnCompressed()
     if pub1.Address().P2SH() != btcAddrP2SH {
         t.Error("error compress address when P2SH")
     }
@@ -75,9 +74,9 @@ func TestBTC_P2SH(t *testing.T) {
 
 func TestBTC_P2WPKH(t *testing.T) {
 
-    priKey, _ := bitcoin.ParseWIF(btcPriWif)
+    priKey, _ := ParseWIF(btcPriWif)
     pub := priKey.PubKey()
-    addr, _ := pub.Address().P2WPKH()
+    addr := pub.Address().P2WPKH()
     if addr != btcAddrP2WPKH {
         t.Error("error address P2WPKH")
     }
@@ -85,9 +84,9 @@ func TestBTC_P2WPKH(t *testing.T) {
 
 func TestBTC_P2WSH(t *testing.T) {
 
-    priKey, _ := bitcoin.ParseWIF(btcPriWif)
+    priKey, _ := ParseWIF(btcPriWif)
     pub := priKey.PubKey()
-    addr, _ := pub.Address().P2WSH()
+    addr := pub.Address().P2WSH()
     if addr != btcAddrP2WSH {
         t.Error("error address P2WSH")
     }
@@ -95,7 +94,7 @@ func TestBTC_P2WSH(t *testing.T) {
 
 func TestBTC_P2SHP2WPKH(t *testing.T) {
 
-    priKey, _ := bitcoin.ParseWIF(btcPriWif)
+    priKey, _ := ParseWIF(btcPriWif)
     pub := priKey.PubKey()
     if pub.Address().P2SHP2WPKH() != btcAddrP2SHP2WPKH {
         t.Error("error address P2SHP2WPKH")

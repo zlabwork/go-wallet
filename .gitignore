@@ -27,4 +27,4 @@
 .idea
 .DS_Store
 go.sum
-main.go
+cmd

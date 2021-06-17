@@ -2,13 +2,13 @@
 ```bash
 go get github.com/zlabwork/go-chain
 
-go get github.com/zlabwork/go-chain@v1.1.0
+go get github.com/zlabwork/go-chain@v1.3.0
 ```
 ## bitcoin
 ```golang
-import "github.com/zlabwork/go-chain/bitcoin"
+import "github.com/zlabwork/gochain/btc"
 
-priKey := bitcoin.NewPriKeyRandom()
+priKey := btc.NewPriKeyRandom()
 priKey.WIF() // L211iZmidtxLQ2s7hzM9BYacPUu2asT1KkCkyrTbNbDib2N85ai5
 pubKey := priKey.PubKey()
 address1 := pubKey.Address().P2PKH() // 19c4pkCL2jvTFYkZXDyUHi4ceoNze44mXE
@@ -18,7 +18,9 @@ address2 := pubKey.Address().P2SH()  // 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
 
 ## bitcoincash
 ```golang
-priKey := bitcoincash.NewPriKeyRandom()
+import "github.com/zlabwork/gochain/bch"
+
+priKey := bch.NewPriKeyRandom()
 address := priKey.PubKey().Address().P2PKH()
 log.Println(address) // qzz6eq5we2qdxg29jkzxkxafc34xhduk7vhayz3z06
 ```

@@ -4,7 +4,7 @@ go get github.com/zlabwork/go-chain
 
 go get github.com/zlabwork/go-chain@v1.3.0
 ```
-## bitcoin
+## BTC
 ```golang
 import "github.com/zlabwork/gochain/btc"
 
@@ -16,7 +16,7 @@ address2 := pubKey.Address().P2SH()  // 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
 ```
 
 
-## bitcoincash
+## BCH
 ```golang
 import "github.com/zlabwork/gochain/bch"
 
@@ -26,21 +26,21 @@ log.Println(address) // qzz6eq5we2qdxg29jkzxkxafc34xhduk7vhayz3z06
 ```
 
 
-## ethereum
+## ETH
 ```golang
-import "github.com/zlabwork/go-chain/ethereum"
+import "github.com/zlabwork/gochain/eth"
 
-lib := ethereum.NewEthLib()
-priKey, _ := lib.GenPriKey()
-address, _ := lib.GetAddress(priKey)
+priKey := eth.NewPriKeyRandom()
+priKey.Address().String()
 
 // 测试网络
-lib.Connect("http://127.0.0.1:8545")
+cs, _ := eth.NewConnectService("http://127.0.0.1:8545")
+cs.GetBalance("0x06****11")
 
 // 正式网络 
 // https://infura.io/ 需要申请一个KEY
-// lib.Connect("https://mainnet.infura.io/v3/xxxxxxxx")
-// lib.Connect("wss://mainnet.infura.io/ws/v3/xxxxxxxx")
+// eth.NewConnectService("https://mainnet.infura.io/v3/xxxxxxxx")
+// eth.NewConnectService("wss://mainnet.infura.io/ws/v3/xxxxxxxx")
 ```
 
 ## 钱包工具

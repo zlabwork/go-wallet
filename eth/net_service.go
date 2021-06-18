@@ -1,4 +1,4 @@
-package ethereum
+package eth
 
 // docs: https://goethereumbook.org/zh
 
@@ -17,46 +17,44 @@ import (
     "regexp"
 )
 
-type EthLib struct {
-    client  *ethclient.Client
+type EthHandle struct {
+    cli     *ethclient.Client
     chainID *big.Int
 }
 
-func NewEthLib() *EthLib {
-    return &EthLib{}
-}
-
-// 连接
-func (e *EthLib) Connect(address string) error {
-    c, err := ethclient.Dial(address)
+// dsn demo
+// http://127.0.0.1:8545
+// wss://mainnet.infura.io/ws/v3/xxxxxxxx
+// https://mainnet.infura.io/v3/xxxxxxxx
+func NewConnectService(dsn string) (*EthHandle, error) {
+    c, err := ethclient.Dial(dsn)
     if err != nil {
-        return err
+        return nil, err
     }
-    e.client = c
-    return nil
+    return &EthHandle{cli: c}, nil
 }
 
 // 获取连接
-func (e *EthLib) GetClient() *ethclient.Client {
-    return e.client
+func (e *EthHandle) GetClient() *ethclient.Client {
+    return e.cli
 }
 
 // set chainId
-func (e *EthLib) SetChainID(id int64) {
+func (e *EthHandle) SetChainID(id int64) {
     e.chainID = big.NewInt(id)
 }
 
 // get chainId
-func (e *EthLib) GetChainID() *big.Int {
+func (e *EthHandle) GetChainID() *big.Int {
 
     if e.chainID != nil {
         return e.chainID
     }
-    if e.client == nil {
+    if e.cli == nil {
         return nil
     }
 
-    id, err := e.client.NetworkID(context.Background())
+    id, err := e.cli.NetworkID(context.Background())
     if err != nil {
         return nil
     }
@@ -64,57 +62,32 @@ func (e *EthLib) GetChainID() *big.Int {
     return e.chainID
 }
 
-// 根据私钥获取地址
-func (e *EthLib) GetAddress(priKey []byte) (address string, error error) {
-
-    privateKey, err := crypto.ToECDSA(priKey)
-    if err != nil {
-        return "", err
-    }
-
-    addr, err := e.priKeyToAddr(privateKey)
-    if err != nil {
-        return "", err
-    }
-    return addr.Hex(), nil
-}
-
 // 获取额度
-func (e *EthLib) GetBalance(address string) (*big.Int, error) {
-    if e.client == nil {
+func (e *EthHandle) GetBalance(address string) (*big.Int, error) {
+    if e.cli == nil {
         return nil, errors.New("server is not connected")
     }
     account := common.HexToAddress(address)
-    balance, err := e.client.BalanceAt(context.Background(), account, nil)
+    balance, err := e.cli.BalanceAt(context.Background(), account, nil)
     if err != nil {
         return nil, err
     }
     return balance, nil
 }
 
-// 创建账号
-func (e *EthLib) GenPriKey() ([]byte, error) {
-    //Create an account
-    key, err := crypto.GenerateKey()
-    if err != nil {
-        return nil, err
-    }
-    return key.D.Bytes(), nil
-}
-
 // 校验地址
-func (e *EthLib) IsValidAddress(address string) bool {
+func (e *EthHandle) IsValidAddress(address string) bool {
     re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
     return re.MatchString(address)
 }
 
 // 检测是否为合约地址
-func (e *EthLib) IsContract(address string) (bool, error) {
-    if e.client == nil {
+func (e *EthHandle) IsContract(address string) (bool, error) {
+    if e.cli == nil {
         return false, errors.New("server is not connected")
     }
     addr := common.HexToAddress(address)
-    byteCode, err := e.client.CodeAt(context.Background(), addr, nil)
+    byteCode, err := e.cli.CodeAt(context.Background(), addr, nil)
     if err != nil {
         return false, err
     }
@@ -122,7 +95,7 @@ func (e *EthLib) IsContract(address string) (bool, error) {
 }
 
 // 交易 - 使用指定私钥
-func (e *EthLib) TransferUsePriKey(priKey []byte, toAddr string, wei *big.Int) (txHash string, err error) {
+func (e *EthHandle) TransferUsePriKey(priKey []byte, toAddr string, wei *big.Int) (txHash string, err error) {
     k, err := crypto.ToECDSA(priKey)
     if err != nil {
         return "", err
@@ -130,26 +103,23 @@ func (e *EthLib) TransferUsePriKey(priKey []byte, toAddr string, wei *big.Int) (
     return e.transferViaPriKey(k, toAddr, wei)
 }
 
-func (e *EthLib) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddr string, wei *big.Int) (txHash string, err error) {
-    if e.client == nil {
+func (e *EthHandle) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddr string, wei *big.Int) (txHash string, err error) {
+    if e.cli == nil {
         return "", errors.New("server is not connected")
     }
 
-    address, err := e.priKeyToAddr(priKey)
-    if err != nil {
-        return "", err
-    }
+    address := crypto.PubkeyToAddress(priKey.PublicKey)
 
-    from := *address
+    from := address
     to := common.HexToAddress(toAddr)
 
-    nonce, err := e.client.PendingNonceAt(context.Background(), from)
+    nonce, err := e.cli.PendingNonceAt(context.Background(), from)
     if err != nil {
         return "", err
     }
 
     // gasPrice := big.NewInt(30000000000) // in wei (30 gwei)
-    gasPrice, err := e.client.SuggestGasPrice(context.Background())
+    gasPrice, err := e.cli.SuggestGasPrice(context.Background())
     if err != nil {
         return "", err
     }
@@ -165,7 +135,7 @@ func (e *EthLib) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddr string, wei 
     }
 
     // SendTransaction
-    err = e.client.SendTransaction(context.Background(), signedTx)
+    err = e.cli.SendTransaction(context.Background(), signedTx)
     if err != nil {
         return "", err
     }
@@ -174,12 +144,12 @@ func (e *EthLib) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddr string, wei 
 }
 
 // 生成原始交易 - 简单
-func (e *EthLib) GenRawTxSimple(priKey []byte, toAddr string, wei *big.Int) (rawTX string, err error) {
+func (e *EthHandle) CreateTxData(priKey []byte, toAddr string, wei *big.Int) (rawTX string, err error) {
 
-    if e.client == nil {
+    if e.cli == nil {
         return "", errors.New("server is not connected")
     }
-    client := e.client
+    client := e.cli
 
     // 1. gasLimit gasPrice
     gasLimit := uint64(21000) // in units
@@ -194,16 +164,16 @@ func (e *EthLib) GenRawTxSimple(priKey []byte, toAddr string, wei *big.Int) (raw
     // 3. return
     var data []byte
 
-    return e.GenRawTxData(priKey, toAddr, wei, gasLimit, gasPrice, chainID, data)
+    return e.CreateTxDataAdvanced(priKey, toAddr, wei, gasLimit, gasPrice, chainID, data)
 }
 
-// 生成原始交易 - 复杂
-func (e *EthLib) GenRawTxData(priKey []byte, toAddr string, wei *big.Int, gasLimit uint64, gasPrice *big.Int, chainID *big.Int, data []byte) (rawTX string, err error) {
+// 生成原始交易 - 高级
+func (e *EthHandle) CreateTxDataAdvanced(priKey []byte, toAddr string, wei *big.Int, gasLimit uint64, gasPrice *big.Int, chainID *big.Int, data []byte) (rawTX string, err error) {
 
-    if e.client == nil {
+    if e.cli == nil {
         return "", errors.New("server is not connected")
     }
-    client := e.client
+    client := e.cli
 
     // 1. 私钥
     privateKey, err := crypto.ToECDSA(priKey)
@@ -212,10 +182,10 @@ func (e *EthLib) GenRawTxData(priKey []byte, toAddr string, wei *big.Int, gasLim
     }
 
     // 2. 公钥
-    address, err := e.priKeyToAddr(privateKey)
+    address := crypto.PubkeyToAddress(privateKey.PublicKey)
 
     // 3. nonce
-    fromAddress := *address
+    fromAddress := address
     nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
     if err != nil {
         return "", err
@@ -238,9 +208,9 @@ func (e *EthLib) GenRawTxData(priKey []byte, toAddr string, wei *big.Int, gasLim
 }
 
 // 发送原始交易
-func (e *EthLib) SendRawTX(rawTx string) (txHash string, err error) {
+func (e *EthHandle) SendRawTX(rawTx string) (txHash string, err error) {
 
-    if e.client == nil {
+    if e.cli == nil {
         return "", errors.New("server is not connected")
     }
 
@@ -249,7 +219,7 @@ func (e *EthLib) SendRawTX(rawTx string) (txHash string, err error) {
     tx := new(types.Transaction)
     rlp.DecodeBytes(rawTxBytes, &tx)
 
-    if err = e.client.SendTransaction(context.Background(), tx); err != nil {
+    if err = e.cli.SendTransaction(context.Background(), tx); err != nil {
         return "", err
     }
 
@@ -257,7 +227,7 @@ func (e *EthLib) SendRawTX(rawTx string) (txHash string, err error) {
 }
 
 // 签名
-func (e *EthLib) GenSign(priKey []byte, data []byte) (signature string, err error) {
+func (e *EthHandle) CreateSign(priKey []byte, data []byte) (signature string, err error) {
     privateKey, err := crypto.ToECDSA(priKey)
     if err != nil {
         return "", err
@@ -274,9 +244,9 @@ func (e *EthLib) GenSign(priKey []byte, data []byte) (signature string, err erro
 }
 
 // 查询区块头 - number = nil 查询最新区块的头信息
-func (e *EthLib) GetBlockHeader(number *big.Int) (*types.Header, error) {
+func (e *EthHandle) GetBlockHeader(number *big.Int) (*types.Header, error) {
 
-    header, err := e.client.HeaderByNumber(context.Background(), number)
+    header, err := e.cli.HeaderByNumber(context.Background(), number)
     if err != nil {
         return nil, err
     }
@@ -285,18 +255,12 @@ func (e *EthLib) GetBlockHeader(number *big.Int) (*types.Header, error) {
 }
 
 // 查询区块 - number = nil 查询最新区块
-func (e *EthLib) GetBlock(number *big.Int) (*types.Block, error) {
+func (e *EthHandle) GetBlock(number *big.Int) (*types.Block, error) {
 
-    block, err := e.client.BlockByNumber(context.Background(), number)
+    block, err := e.cli.BlockByNumber(context.Background(), number)
     if err != nil {
         return nil, err
     }
 
     return block, nil
-}
-
-// 私钥生成 common.Address
-func (e *EthLib) priKeyToAddr(priKey *ecdsa.PrivateKey) (*common.Address, error) {
-    addr := crypto.PubkeyToAddress(priKey.PublicKey)
-    return &addr, nil
 }

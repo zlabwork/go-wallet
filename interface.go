@@ -4,7 +4,7 @@ type PriKey interface {
     Bytes() []byte
     Base64() string
     Hex() string
-    WIF() string
+    // WIF() string
 }
 
 type PubKey interface {
@@ -18,6 +18,7 @@ type BtcAddress interface {
     P2WSH() string
     P2SHP2WPKH() string
 }
+
 type BchAddress interface {
     P2PKH() string
     P2SH() string

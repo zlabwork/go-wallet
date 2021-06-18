@@ -6,7 +6,7 @@ go get github.com/zlabwork/go-chain@v1.3.0
 ```
 ## BTC
 ```golang
-import "github.com/zlabwork/gochain/btc"
+import "github.com/zlabwork/go-chain/btc"
 
 priKey := btc.NewPriKeyRandom()
 priKey.WIF() // L211iZmidtxLQ2s7hzM9BYacPUu2asT1KkCkyrTbNbDib2N85ai5
@@ -18,7 +18,7 @@ address2 := pubKey.Address().P2SH()  // 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
 
 ## BCH
 ```golang
-import "github.com/zlabwork/gochain/bch"
+import "github.com/zlabwork/go-chain/bch"
 
 priKey := bch.NewPriKeyRandom()
 address := priKey.PubKey().Address().P2PKH()
@@ -28,7 +28,7 @@ log.Println(address) // qzz6eq5we2qdxg29jkzxkxafc34xhduk7vhayz3z06
 
 ## ETH
 ```golang
-import "github.com/zlabwork/gochain/eth"
+import "github.com/zlabwork/go-chain/eth"
 
 priKey := eth.NewPriKeyRandom()
 priKey.Address().String()

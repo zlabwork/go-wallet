@@ -3,7 +3,7 @@ package bch
 import (
     "fmt"
     btcutil "github.com/FactomProject/btcutilecc"
-    "github.com/zlabwork/gochain/utils"
+    "github.com/zlabwork/go-chain/utils"
 )
 
 var (

@@ -4,7 +4,7 @@ import (
     "crypto/rand"
     "fmt"
     "github.com/mr-tron/base58"
-    "github.com/zlabwork/gochain/utils"
+    "github.com/zlabwork/go-chain/utils"
 )
 
 type TestNetPriKey struct {

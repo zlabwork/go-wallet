@@ -1,6 +1,6 @@
 package docs
 
-var chineseSimplified = `的
+const chineseSimplified = `的
 一
 是
 在

@@ -1,6 +1,6 @@
 package docs
 
-var korean = `가격
+const korean = `가격
 가끔
 가난
 가능

@@ -43,6 +43,11 @@ cs.GetBalance("0x06****11")
 // eth.NewConnectService("wss://mainnet.infura.io/ws/v3/xxxxxxxx")
 ```
 
+
+## HD Wallet Example
+[HD Wallet Example](docs/HDWallet.md)  
+
+
 ## 钱包工具
 * http://webhdwallet.github.io/  
 * https://iancoleman.io/bip39/  

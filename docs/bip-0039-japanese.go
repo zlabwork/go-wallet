@@ -1,6 +1,6 @@
 package docs
 
-var japanese = `あいこくしん
+const japanese = `あいこくしん
 あいさつ
 あいだ
 あおぞら

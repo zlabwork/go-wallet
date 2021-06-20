@@ -1,4 +1,4 @@
-package go-chain
+package common
 
 type PriKey interface {
     Bytes() []byte

@@ -6,6 +6,7 @@ import (
     "github.com/zlabwork/go-chain/utils"
 )
 
+// https://en.bitcoin.it/wiki/Script
 const (
     OP_0             = byte(0x00)
     OP_1             = byte(0x51)
@@ -31,13 +32,13 @@ func checksum(data []byte) ([]byte, error) {
 }
 
 func p2sh(hash160 []byte) string {
-    data := append([]byte{0x05}, hash160...)
+    data := append([]byte{getVer("P2SH")}, hash160...)
     sum, _ := checksum(data)
     return base58.Encode(append(data, sum...))
 }
 
 func p2pkh(hash160 []byte) string {
-    data := append([]byte{0x00}, hash160...)
+    data := append([]byte{getVer("P2PKH")}, hash160...)
     sum, _ := checksum(data)
     return base58.Encode(append(data, sum...))
 }

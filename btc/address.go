@@ -66,6 +66,12 @@ func (ad *Address) P2WSH() string {
 // p2sh-segwit
 // format: m/49'/0'/0' support: imToken
 func (ad *Address) P2SHP2WPKH() string {
+
+    // public key used in P2SH-P2WPKH MUST be compressed, i.e. 33 bytes in size
+    if len(ad.pub) != 33 {
+        return ""
+    }
+
     // OP_0 size hash160
     pre := []byte{OP_0, OP_PUSH_20}
     redeem := append(pre, ad.hash...)

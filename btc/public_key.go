@@ -3,12 +3,18 @@ package btc
 import "fmt"
 
 type PubKey struct {
-    k []byte
+    k          []byte
+    compressed bool
 }
 
 func NewPubKey(b []byte) (*PubKey, error) {
-    if len(b) == 33 || len(b) == 65 {
-        return &PubKey{k: b}, nil
+    l := len(b)
+    if l == 33 || l == 65 {
+        c := true
+        if l != 33 {
+            c = false
+        }
+        return &PubKey{k: b, compressed: c}, nil
     }
     return nil, fmt.Errorf("invalid length")
 }

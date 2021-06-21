@@ -76,7 +76,7 @@ func (pri *PriKey) Hex() string {
 }
 
 func (pri *PriKey) WIF() string {
-    ver := []byte{0x80}
+    ver := []byte{getVer("WIF")}
     compression := byte(0x01)
     k := append(ver, pri.k...)
     k = append(k, compression)

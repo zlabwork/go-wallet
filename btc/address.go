@@ -38,7 +38,11 @@ func (ad *Address) P2WPKH() string {
     for _, i := range ad.hash {
         program = append(program, int(i))
     }
-    addr, err := bech32.SegwitAddrEncode("bc", 0, program)
+    hrp := "bc"
+    if !isMainNet() {
+        hrp = "tb"
+    }
+    addr, err := bech32.SegwitAddrEncode(hrp, 0, program)
     if err != nil {
         return ""
     }
@@ -55,7 +59,11 @@ func (ad *Address) P2WSH() string {
     for _, i := range ha {
         program = append(program, int(i))
     }
-    addr, err := bech32.SegwitAddrEncode("bc", 0, program)
+    hrp := "bc"
+    if !isMainNet() {
+        hrp = "tb"
+    }
+    addr, err := bech32.SegwitAddrEncode(hrp, 0, program)
     if err != nil {
         return ""
     }

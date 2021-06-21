@@ -44,6 +44,44 @@ cs.GetBalance("0x06****11")
 ```
 
 
+## Transaction
+[Standard Pubkey Script](https://developer.bitcoin.org/devguide/transactions.html)  
+[Deconstructing Transactions](https://www.royalfork.org/2014/11/20/txn-demo/)  
+
+1. Pay To Public Key Hash (P2PKH)  
+2. Pay To Script Hash (P2SH)  
+3. Multisig  
+4. Pubkey  
+5. Null Data  
+
+
+```bash
+# P2PKH
+Pubkey script: OP_DUP OP_HASH160 <PubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+Signature script: <sig> <pubkey>
+
+# P2SH
+Pubkey script: OP_HASH160 <Hash160(redeemScript)> OP_EQUAL
+Signature script: <sig> [sig] [sig...] <redeemScript>
+
+# Multisig
+Pubkey script: <m> <A pubkey> [B pubkey] [C pubkey...] <n> OP_CHECKMULTISIG
+Signature script: OP_0 <A sig> [B sig] [C sig...]
+
+# Pubkey
+Pubkey script: <pubkey> OP_CHECKSIG
+Signature script: <sig>
+
+# Null Data
+Pubkey Script: OP_RETURN <0 to 40 bytes of data>
+(Null data scripts cannot be spent, so there's no signature script.)
+```
+
+## Bitcoin Transaction
+![bitcoin-tx](docs/assets/bitcoin-tx.png)
+
+
+
 ## HD Wallet Example
 [HD Wallet Example](docs/HDWallet.md)  
 
@@ -80,7 +118,3 @@ cs.GetBalance("0x06****11")
 
 ## Similar Tools 
 [python bitcoin-utils](https://pypi.org/project/bitcoin-utils/)  
-
-
-## Bitcoin Transaction
-![bitcoin-tx](docs/assets/bitcoin-tx.png)

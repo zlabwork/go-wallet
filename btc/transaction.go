@@ -17,9 +17,16 @@ type VIn struct {
     Index uint32
 }
 
+type transaction struct {
+}
+
+func NewTransaction() *transaction {
+    return &transaction{}
+}
+
 // @link https://www.royalfork.org/2014/11/20/txn-demo/
 // @link https://developer.bitcoin.org/reference/transactions.html#raw-transaction-format
-func CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]byte, error) {
+func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]byte, error) {
 
     // 格式: 01000000 NUM01 INPUT NUM02 OUTPUTS 00000000
     ver := []byte{0x01, 0x00, 0x00, 0x00}
@@ -30,7 +37,7 @@ func CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]byte, error) {
     // inputs
     var inputs []byte
     for _, i := range ins {
-        in, err := txIn(i)
+        in, err := tx.txIn(i)
         if err != nil {
             return nil, err
         }
@@ -40,7 +47,7 @@ func CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]byte, error) {
     // outputs
     var outputs []byte
     for _, o := range outs {
-        ou, err := txOut(o.Address, o.Amount)
+        ou, err := tx.txOut(o.Address, o.Amount)
         if err != nil {
             return nil, err
         }
@@ -55,8 +62,9 @@ func CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]byte, error) {
     return r, nil
 }
 
+// FIXME:: 未完待续
 // @link https://developer.bitcoin.org/reference/transactions.html#txin-a-transaction-input-non-coinbase
-func txIn(in VIn) ([]byte, error) {
+func (tx *transaction) txIn(in VIn) ([]byte, error) {
 
     // vOut index
     idx := make([]byte, 4)
@@ -95,14 +103,14 @@ func txIn(in VIn) ([]byte, error) {
 }
 
 // @link https://developer.bitcoin.org/reference/transactions.html#txout-a-transaction-output
-func txOut(addr string, sat int64) ([]byte, error) {
+func (tx *transaction) txOut(addr string, sat int64) ([]byte, error) {
 
     // 格式: sat value + pk_script bytes + pk_script
     // pk_script 的最大长度 10,000 bytes
 
     val := make([]byte, 8)
     binary.LittleEndian.PutUint64(val, uint64(sat))
-    pks, err := pkScript(addr)
+    pks, err := tx.pkScript(addr)
     if err != nil {
         return nil, err
     }
@@ -119,9 +127,9 @@ func txOut(addr string, sat int64) ([]byte, error) {
 }
 
 // 锁定脚本 - Lock Script
-func pkScript(addr string) ([]byte, error) {
+func (tx *transaction) pkScript(addr string) ([]byte, error) {
 
-    v, b, err := parseAddr(addr)
+    v, b, err := tx.parseAddr(addr)
     if err != nil {
         return nil, err
     }
@@ -143,7 +151,7 @@ func pkScript(addr string) ([]byte, error) {
     return r, nil
 }
 
-func parseAddr(addr string) (uint8, []byte, error) {
+func (tx *transaction) parseAddr(addr string) (uint8, []byte, error) {
     // TODO :: 验证 checksum
     b, err := base58.Decode(addr)
     return b[0], b[1:21], err

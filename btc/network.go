@@ -12,7 +12,7 @@ func isMainNet() bool {
     return network == "mainnet"
 }
 
-// name = P2PKH, P2PKH, P2SH, WIF
+// name = P2PKH, P2SH, WIF
 func getVer(name string) uint8 {
     switch name {
     case "P2PKH":

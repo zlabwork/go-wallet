@@ -78,7 +78,9 @@ Pubkey Script: OP_RETURN <0 to 40 bytes of data>
 ```
 
 ## Bitcoin Transaction
-![bitcoin-tx](docs/assets/bitcoin-tx.png)
+![bitcoin-tx](docs/assets/bitcoin-tx.png)  
+
+![TxBinaryMap](docs/assets/bitcoin-TxBinaryMap.png)  
 
 
 

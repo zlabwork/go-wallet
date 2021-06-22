@@ -5,7 +5,7 @@ import (
 )
 
 type HandleConfigs struct {
-    Host string // http://127.0.0.1:8332
+    Host string // http://127.0.0.1:18443
     User string
     Pass string
 }

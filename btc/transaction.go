@@ -8,13 +8,14 @@ import (
 )
 
 type VOut struct {
-    Address string
-    Amount  int64 // satoshis
+    Addr string
+    Amt  int64 // satoshis
 }
 
 type VIn struct {
-    Tx    string
-    Index uint32
+    Tx  string
+    N   uint32
+    Amt int64 // satoshis
 }
 
 type transaction struct {
@@ -47,7 +48,7 @@ func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]b
     // outputs
     var outputs []byte
     for _, o := range outs {
-        ou, err := tx.txOut(o.Address, o.Amount)
+        ou, err := tx.txOut(o.Addr, o.Amt)
         if err != nil {
             return nil, err
         }
@@ -68,7 +69,7 @@ func (tx *transaction) txIn(in VIn) ([]byte, error) {
 
     // vOut index
     idx := make([]byte, 4)
-    binary.LittleEndian.PutUint32(idx, in.Index)
+    binary.LittleEndian.PutUint32(idx, in.N)
 
     // txId - little-endian 反转
     txId1, err := hex.DecodeString(in.Tx)

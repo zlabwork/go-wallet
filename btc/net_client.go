@@ -104,7 +104,7 @@ func (sc *ServiceClient) GetTxOut(tx string, index int) ([]byte, error) {
     return b, nil
 }
 
-func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int, chargeBack string) (hex string, error error) {
+func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, chargeBack string) (hex string, error error) {
 
     // 1. total in
     var totalIn int64
@@ -126,16 +126,15 @@ func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat in
 
     // 3. fee sat
     size := 148*len(ins) + 34*len(outs) + 10
-    fee := size * sat
-    left := totalIn - totalOut - int64(fee)
+    fee := int64(size) * sat
+    left := totalIn - totalOut - fee
     if left < 0 {
         return "", fmt.Errorf("fee is not enough")
     }
 
     // 4. charge back
-    thresholdSat := 34*int64(sat) + minTxAmount // sat
-    if left > thresholdSat {
-        outs = append(outs, VOut{Addr: chargeBack, Amt: left - int64(34*sat)})
+    if left-34*sat > minTxAmount {
+        outs = append(outs, VOut{Addr: chargeBack, Amt: left - 34*sat})
         fee += 34 * sat
     }
 

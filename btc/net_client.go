@@ -95,13 +95,17 @@ func (sc *ServiceClient) GetBlock(blockHeight int64) ([]byte, error) {
 }
 
 // https://developer.bitcoin.org/reference/rpc/gettxout.html
-func (sc *ServiceClient) GetTxOut(tx string, index int) ([]byte, error) {
+func (sc *ServiceClient) GetTxOut(tx string, index int) (*txOut, error) {
 
     b, err := sc.Request("gettxout", []interface{}{tx, index})
     if err != nil {
         return nil, err
     }
-    return b, nil
+    var out txOut
+    if err = json.Unmarshal(b, &out); err != nil {
+        return nil, err
+    }
+    return &out, nil
 }
 
 func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, chargeBack string) (hex string, error error) {
@@ -109,10 +113,15 @@ func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat in
     // 1. total in
     var totalIn int64
     for _, in := range ins {
-        if in.Amt < minTxAmount {
+        txOut, err := sc.GetTxOut(in.Tx, int(in.N))
+        if err != nil {
+            return "", err
+        }
+        amt := int64(txOut.Result.Value * math.Pow10(8))
+        if amt < minTxAmount {
             return "", fmt.Errorf("min allow amount %d satoshis", minTxAmount)
         }
-        totalIn += in.Amt
+        totalIn += amt
     }
 
     // 2. total out

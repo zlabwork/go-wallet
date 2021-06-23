@@ -9,13 +9,14 @@ import (
 
 type VOut struct {
     Addr string
-    Amt  int64 // satoshis
+    Amt  int64  // satoshis (1BTC = 1*10^8 sat)
+    Data string // 十六进制字符串
 }
 
 type VIn struct {
-    Tx  string
-    N   uint32
-    Amt int64 // satoshis
+    Tx  string // txId
+    N   uint32 // vout
+    Amt int64  // satoshis TODO :: 是否必要？
 }
 
 type transaction struct {

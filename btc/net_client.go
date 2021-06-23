@@ -6,6 +6,7 @@ import (
     "fmt"
     "github.com/zlabwork/go-zlibs"
     "io/ioutil"
+    "math"
     "strconv"
     "strings"
     "time"
@@ -126,15 +127,15 @@ func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, sat int, chargeBack st
     // 3. fee sat
     size := 148*len(ins) + 34*len(outs) + 10
     fee := size * sat
-    thresholdSat := 34*int64(sat) + minTxAmount // sat
-
-    // 4. charge back
-    charge := totalIn - totalOut - int64(fee)
-    if charge < 0 {
+    left := totalIn - totalOut - int64(fee)
+    if left < 0 {
         return "", fmt.Errorf("fee is not enough")
     }
-    if charge > thresholdSat {
-        outs = append(outs, VOut{Addr: chargeBack, Amt: charge})
+
+    // 4. charge back
+    thresholdSat := 34*int64(sat) + minTxAmount // sat
+    if left > thresholdSat {
+        outs = append(outs, VOut{Addr: chargeBack, Amt: left - int64(34*sat)})
         fee += 34 * sat
     }
 
@@ -157,30 +158,36 @@ func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut) (hex string, error 
         }
     }
 
-    // 2.
+    // 2. in
     type inType struct {
         TxId string `json:"txid"`
         VOut uint32 `json:"vout"`
     }
     var inData []inType
     for _, item := range ins {
-        var tmp inType
         if len(item.Tx) != 64 {
             return "", fmt.Errorf("error transaction: %s", item.Tx)
         }
-        tmp.TxId = item.Tx
-        tmp.VOut = item.N
-        inData = append(inData, tmp)
+        inData = append(inData, inType{TxId: item.Tx, VOut: item.N})
     }
-    param := []interface{}{inData, outs}
 
-    // 3.
+    // 3. out
+    outData := make(map[string]interface{})
+    for _, ou := range outs {
+        outData[ou.Addr] = float64(ou.Amt) * math.Pow10(-8)
+        if len(ou.Data) > 0 {
+            outData["data"] = ou.Data
+        }
+    }
+    param := []interface{}{inData, outData}
+
+    // 4.
     b, err := sc.Request("createrawtransaction", param)
     if err != nil {
         return "", err
     }
 
-    // 4. parse
+    // 5. parse
     type desc struct {
         Result string      `json:"result"`
         Error  interface{} `json:"error"`
@@ -199,6 +206,7 @@ func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut) (hex string, error 
 }
 
 // https://developer.bitcoin.org/reference/rpc/signrawtransactionwithkey.html
+// priKeys: base58-encoded private keys
 func (sc *ServiceClient) SignRawTX(hex string, priKeys []string) (string, error) {
 
     // 1.
@@ -211,8 +219,9 @@ func (sc *ServiceClient) SignRawTX(hex string, priKeys []string) (string, error)
     // 2.
     type desc struct {
         Result struct {
-            Hex      string `json:"hex"`
-            Complete bool   `json:"complete"`
+            Hex      string      `json:"hex"`
+            Complete bool        `json:"complete"`
+            Errors   interface{} `json:"errors"`
         } `json:"result"`
         Error interface{} `json:"error"`
         ID    string      `json:"id"`
@@ -223,7 +232,7 @@ func (sc *ServiceClient) SignRawTX(hex string, priKeys []string) (string, error)
         return "", err
     }
     if resp.Result.Complete != true {
-        return "", fmt.Errorf("sign is not complete")
+        return "", fmt.Errorf("error response: %s", string(b))
     }
 
     return resp.Result.Hex, err

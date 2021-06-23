@@ -10,7 +10,6 @@ import (
 type VOut struct {
     Addr string
     Amt  int64  // satoshis (1BTC = 1*10^8 sat)
-    Data string // 十六进制字符串
 }
 
 type VIn struct {

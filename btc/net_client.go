@@ -104,7 +104,7 @@ func (sc *ServiceClient) GetTxOut(tx string, index int) ([]byte, error) {
     return b, nil
 }
 
-func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, sat int, chargeBack string) (hex string, error error) {
+func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int, chargeBack string) (hex string, error error) {
 
     // 1. total in
     var totalIn int64
@@ -139,11 +139,11 @@ func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, sat int, chargeBack st
         fee += 34 * sat
     }
 
-    return sc.CreateRawTX(ins, outs)
+    return sc.CreateRawTX(ins, outs, hexData)
 }
 
 // https://developer.bitcoin.org/reference/rpc/createrawtransaction.html
-func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut) (hex string, error error) {
+func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (hex string, error error) {
 
     // 1. check
     if len(ins) < 1 {
@@ -175,9 +175,9 @@ func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut) (hex string, error 
     outData := make(map[string]interface{})
     for _, ou := range outs {
         outData[ou.Addr] = float64(ou.Amt) * math.Pow10(-8)
-        if len(ou.Data) > 0 {
-            outData["data"] = ou.Data
-        }
+    }
+    if len(hexData) > 0 {
+        outData["data"] = hexData
     }
     param := []interface{}{inData, outData}
 

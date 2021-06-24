@@ -111,6 +111,30 @@ func (sc *ServiceClient) GetTxOut(tx string, index int) (*txOut, error) {
     return &out, nil
 }
 
+func (sc *ServiceClient) CreateTransferAll(ins map[string]uint32, addr string, sat int64) (hex string, error error) {
+
+    var t int64
+    var inT []VIn
+    for tx, n := range ins {
+        ou, err := sc.GetTxOut(tx, int(n))
+        if err != nil {
+            return "", err
+        }
+        v := int64(ou.Result.Value * math.Pow10(8))
+        if v < minTxAmount {
+            return "", fmt.Errorf("%s current %d satoshis, less than minimum amount %d satoshis", tx, v, minTxAmount)
+        }
+        t += v
+        inT = append(inT, VIn{Tx: tx, N: n})
+    }
+
+    // fees
+    size := 148*len(ins) + 34 + 10
+    fee := int64(size) * sat
+
+    return sc.CreateRawTX(inT, []VOut{{Addr: addr, Amt: t - fee}}, "")
+}
+
 func (sc *ServiceClient) CreateTXUseMap(ins map[string]uint32, outs map[string]int64, hexData string, sat int64, chargeBack string) (hex string, error error) {
     var inT []VIn
     var outT []VOut
@@ -123,6 +147,7 @@ func (sc *ServiceClient) CreateTXUseMap(ins map[string]uint32, outs map[string]i
     return sc.CreateTX(inT, outT, hexData, sat, chargeBack)
 }
 
+// outs := []VOut{{Addr: "btc address 2", Amt: 1000}, {Addr: "btc address 1", Amt: 2000}}
 func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, chargeBack string) (hex string, error error) {
 
     // 1. total in

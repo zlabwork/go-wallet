@@ -105,7 +105,22 @@ func (sc *ServiceClient) GetTxOut(tx string, index int) (*txOut, error) {
     if err = json.Unmarshal(b, &out); err != nil {
         return nil, err
     }
+    if out.Result.Value == 0 {
+        return nil, fmt.Errorf("%s, error txId or tx has been spent", tx)
+    }
     return &out, nil
+}
+
+func (sc *ServiceClient) CreateTXUseMap(ins map[string]uint32, outs map[string]int64, hexData string, sat int64, chargeBack string) (hex string, error error) {
+    var inT []VIn
+    var outT []VOut
+    for tx, n := range ins {
+        inT = append(inT, VIn{Tx: tx, N: n})
+    }
+    for ad, n := range outs {
+        outT = append(outT, VOut{Addr: ad, Amt: n})
+    }
+    return sc.CreateTX(inT, outT, hexData, sat, chargeBack)
 }
 
 func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, chargeBack string) (hex string, error error) {
@@ -119,7 +134,7 @@ func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat in
         }
         amt := int64(txOut.Result.Value * math.Pow10(8))
         if amt < minTxAmount {
-            return "", fmt.Errorf("min allow amount %d satoshis", minTxAmount)
+            return "", fmt.Errorf("current %d satoshis, less than minimum amount %d satoshis", amt, minTxAmount)
         }
         totalIn += amt
     }
@@ -128,7 +143,7 @@ func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat in
     var totalOut int64
     for _, out := range outs {
         if out.Amt < minTxAmount {
-            return "", fmt.Errorf("min allow amount %d satoshis", minTxAmount)
+            return "", fmt.Errorf("transfer %d satoshis, less than minimum amount %d satoshis", out.Amt, minTxAmount)
         }
         totalOut += out.Amt
     }

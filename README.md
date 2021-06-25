@@ -34,13 +34,13 @@ priKey := eth.NewPriKeyRandom()
 priKey.Address().String()
 
 // 测试网络
-cs, _ := eth.NewConnectService("http://127.0.0.1:8545")
-cs.GetBalance("0x06****11")
+handle, _ := eth.NewServiceHandle("http://127.0.0.1:8545")
+handle.GetBalance("0x06****11")
 
 // 正式网络 
 // https://infura.io/ 需要申请一个KEY
-// eth.NewConnectService("https://mainnet.infura.io/v3/xxxxxxxx")
-// eth.NewConnectService("wss://mainnet.infura.io/ws/v3/xxxxxxxx")
+// eth.NewServiceHandle("https://mainnet.infura.io/v3/xxxxxxxx")
+// eth.NewServiceHandle("wss://mainnet.infura.io/ws/v3/xxxxxxxx")
 ```
 
 

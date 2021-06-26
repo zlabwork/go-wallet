@@ -6,6 +6,7 @@ go get github.com/zlabwork/go-chain@v1.3.0
 ```
 ## BTC
 ```golang
+// 地址与私钥
 import "github.com/zlabwork/go-chain/btc"
 
 priKey := btc.NewPriKeyRandom()
@@ -13,6 +14,37 @@ priKey.WIF() // L211iZmidtxLQ2s7hzM9BYacPUu2asT1KkCkyrTbNbDib2N85ai5
 pubKey := priKey.PubKey()
 address1 := pubKey.Address().P2PKH() // 19c4pkCL2jvTFYkZXDyUHi4ceoNze44mXE
 address2 := pubKey.Address().P2SH()  // 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
+```
+```golang
+// 交易
+import "github.com/zlabwork/go-chain/btc"
+
+// 配置
+// btc.SetNetwork("testnet")
+c := &btc.HandleConfigs{
+    Host: "http://127.0.0.1:18443",
+    User: "user",
+    Pass: "pass123456",
+}
+cli := btc.NewServiceClient(btc.NewServiceHandle(c))
+
+// 输入 [tx:vout]
+ins := map[string]uint32{
+    "47c1c015beceb04c9772bb0575366078bc1f26edaf7bd271a1e31369ee1a88a3": 0,
+    "166858e738b77da7164a26e17f5bf2ffc6cfec0c10537a3810306aa9a3d0b309": 0,
+}
+// 输出
+outs := map[string]int64{
+    "bc1q7k85507tl9n2aguczwkjn9ytjvjvtc07g5yqsk": 2499000000, // 24.99 BTC
+    "1MVf99Vv8ZbFXXL4UwUnQbTLaAphBNeGFW":         2499000000,
+}
+// 生成交易 chargeBack 为找零地址
+// b, err := cli.CreateTransferAll(ins, "1PPQCxxDqSpjxu8N2kEkEimrfUcpWT4Duc", 10)
+b, _ := cli.CreateTXUseMap(ins, outs, "", 10, "1PPQCxxDqSpjxu8N2kEkEimrfUcpWT4Duc")
+// 交易签名
+signedHex, _ := cli.SignRawTX(b, []string{"cUQMEcP7RA8jJ32hghcCwSv55o29SzwS77LpZ5GSU5fsNi3tHFXc"})
+// 发送交易数据
+txId, err := cli.SendRawTX(signedHex)
 ```
 
 

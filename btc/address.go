@@ -88,6 +88,15 @@ func (ad *Address) P2SHP2WPKH() string {
     return p2sh(ha)
 }
 
+// P2WSH nested in P2SH (1-of-1 multisig)
+func (ad *Address) P2SHP2WSH() string {
+    r, err := P2SHP2WSH([][]byte{ad.pub}, 1, 1)
+    if err != nil {
+        return ""
+    }
+    return r
+}
+
 // P2SH-P2WSH
 // https://bitcoincore.org/en/segwit_wallet_dev/
 func P2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {

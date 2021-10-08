@@ -22,6 +22,7 @@ type Handle struct {
     chainID *big.Int
 }
 
+// NewServiceHandle
 // dsn demo
 // http://127.0.0.1:8545
 // wss://mainnet.infura.io/ws/v3/xxxxxxxx
@@ -34,16 +35,19 @@ func NewServiceHandle(dsn string) (*Handle, error) {
     return &Handle{cli: c}, nil
 }
 
+// GetClient
 // 获取连接
 func (h *Handle) GetClient() *ethclient.Client {
     return h.cli
 }
 
+// SetChainID
 // set chainId
 func (h *Handle) SetChainID(id int64) {
     h.chainID = big.NewInt(id)
 }
 
+// GetChainID
 // get chainId
 func (h *Handle) GetChainID() *big.Int {
 
@@ -62,6 +66,7 @@ func (h *Handle) GetChainID() *big.Int {
     return h.chainID
 }
 
+// GetBalance
 // 获取额度
 func (h *Handle) GetBalance(address string) (*big.Int, error) {
     if h.cli == nil {
@@ -75,12 +80,14 @@ func (h *Handle) GetBalance(address string) (*big.Int, error) {
     return balance, nil
 }
 
+// IsValidAddress
 // 校验地址
 func (h *Handle) IsValidAddress(address string) bool {
     reg := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
     return reg.MatchString(address)
 }
 
+// IsContract
 // 检测是否为合约地址
 func (h *Handle) IsContract(address string) (bool, error) {
     if h.cli == nil {
@@ -94,6 +101,7 @@ func (h *Handle) IsContract(address string) (bool, error) {
     return len(byteCode) > 0, nil
 }
 
+// TransferUsePriKey
 // 交易 - 使用指定私钥
 func (h *Handle) TransferUsePriKey(priKey []byte, toAddr string, wei *big.Int) (txHash string, err error) {
     k, err := crypto.ToECDSA(priKey)
@@ -143,6 +151,7 @@ func (h *Handle) transferViaPriKey(priKey *ecdsa.PrivateKey, toAddr string, wei 
     return signedTx.Hash().Hex(), nil
 }
 
+// CreateTxData
 // 生成原始交易 - 简单
 func (h *Handle) CreateTxData(priKey []byte, toAddr string, wei *big.Int) (rawTX string, err error) {
 
@@ -167,6 +176,7 @@ func (h *Handle) CreateTxData(priKey []byte, toAddr string, wei *big.Int) (rawTX
     return h.CreateTxDataAdvanced(priKey, toAddr, wei, gasLimit, gasPrice, chainID, data)
 }
 
+// CreateTxDataAdvanced
 // 生成原始交易 - 高级
 func (h *Handle) CreateTxDataAdvanced(priKey []byte, toAddr string, wei *big.Int, gasLimit uint64, gasPrice *big.Int, chainID *big.Int, data []byte) (rawTX string, err error) {
 
@@ -207,6 +217,7 @@ func (h *Handle) CreateTxDataAdvanced(priKey []byte, toAddr string, wei *big.Int
     return rawTxHex, nil
 }
 
+// SendRawTX
 // 发送原始交易
 func (h *Handle) SendRawTX(rawTx string) (txHash string, err error) {
 
@@ -226,6 +237,7 @@ func (h *Handle) SendRawTX(rawTx string) (txHash string, err error) {
     return tx.Hash().Hex(), nil
 }
 
+// CreateSign
 // 签名
 func (h *Handle) CreateSign(priKey []byte, data []byte) (signature string, err error) {
     privateKey, err := crypto.ToECDSA(priKey)
@@ -243,6 +255,7 @@ func (h *Handle) CreateSign(priKey []byte, data []byte) (signature string, err e
     return hexutil.Encode(sign), nil
 }
 
+// GetBlockHeader
 // 查询区块头 - number = nil 查询最新区块的头信息
 func (h *Handle) GetBlockHeader(number *big.Int) (*types.Header, error) {
 
@@ -254,6 +267,7 @@ func (h *Handle) GetBlockHeader(number *big.Int) (*types.Header, error) {
     return header, nil
 }
 
+// GetBlock
 // 查询区块 - number = nil 查询最新区块
 func (h *Handle) GetBlock(number *big.Int) (*types.Block, error) {
 

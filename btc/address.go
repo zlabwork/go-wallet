@@ -19,6 +19,7 @@ func NewAddress(b []byte) *Address {
     }
 }
 
+// P2PKH
 // @docs https://learnmeabitcoin.com/technical/public-key-hash
 // @docs https://learnmeabitcoin.com/technical/address
 // format: m/44'/0'/0' support: imToken, bitPay
@@ -30,6 +31,7 @@ func (ad *Address) P2SH() string {
     return p2sh(ad.hash)
 }
 
+// P2WPKH
 // Native Address
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 // format: m/44'/0'/0' support: bitPay
@@ -49,6 +51,7 @@ func (ad *Address) P2WPKH() string {
     return addr
 }
 
+// P2WSH2
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 // TODO :: 测试
 func (ad *Address) P2WSH2() string {
@@ -70,6 +73,7 @@ func (ad *Address) P2WSH2() string {
     return addr
 }
 
+// P2WSH
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 func (ad *Address) P2WSH() string {
     r, err := P2WSH([][]byte{ad.pub}, 1, 1)
@@ -79,7 +83,7 @@ func (ad *Address) P2WSH() string {
     return r
 }
 
-// P2SH(P2WPKH)
+// P2SHP2WPKH
 // p2sh-segwit
 // format: m/49'/0'/0' support: imToken
 func (ad *Address) P2SHP2WPKH() string {
@@ -97,6 +101,7 @@ func (ad *Address) P2SHP2WPKH() string {
     return p2sh(ha)
 }
 
+// P2SHP2WSH
 // P2WSH nested in P2SH (1-of-1 multisig)
 func (ad *Address) P2SHP2WSH() string {
     r, err := P2SHP2WSH([][]byte{ad.pub}, 1, 1)
@@ -106,7 +111,7 @@ func (ad *Address) P2SHP2WSH() string {
     return r
 }
 
-// P2SH-P2WSH
+// P2SHP2WSH
 // https://bitcoincore.org/en/segwit_wallet_dev/
 func P2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
     if m <= 0 || n <= 0 || m > n {

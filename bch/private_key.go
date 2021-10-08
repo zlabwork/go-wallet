@@ -13,6 +13,7 @@ type PriKey struct {
     k []byte
 }
 
+// NewPriKeyRandom
 // TODO :: 私钥值约束，最大不能大于 fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140
 func NewPriKeyRandom() *PriKey {
     b := make([]byte, 32)
@@ -50,6 +51,7 @@ func (pri *PriKey) Hex() string {
     return hex.EncodeToString(pri.Bytes())
 }
 
+// WIF
 // TODO
 func (pri *PriKey) WIF() string {
     return ""

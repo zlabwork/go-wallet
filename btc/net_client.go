@@ -68,6 +68,7 @@ func (sc *ServiceClient) Request(method string, params []interface{}) ([]byte, e
     return body, err
 }
 
+// GetBlockHash
 // https://developer.bitcoin.org/reference/rpc/getblockhash.html
 func (sc *ServiceClient) GetBlockHash(blockHeight int64) (string, error) {
     b, err := sc.Request("getblockhash", []interface{}{blockHeight})
@@ -77,6 +78,7 @@ func (sc *ServiceClient) GetBlockHash(blockHeight int64) (string, error) {
     return string(b[11:75]), nil
 }
 
+// GetBlock
 // https://developer.bitcoin.org/reference/rpc/getblock.html
 func (sc *ServiceClient) GetBlock(blockHeight int64) ([]byte, error) {
     // 1. 获取块hash
@@ -94,6 +96,7 @@ func (sc *ServiceClient) GetBlock(blockHeight int64) ([]byte, error) {
     return b, nil
 }
 
+// GetTxOut
 // https://developer.bitcoin.org/reference/rpc/gettxout.html
 func (sc *ServiceClient) GetTxOut(tx string, index int) (*txOut, error) {
 
@@ -147,6 +150,7 @@ func (sc *ServiceClient) CreateTXUseMap(ins map[string]uint32, outs map[string]i
     return sc.CreateTX(inT, outT, hexData, sat, chargeBack)
 }
 
+// CreateTX
 // outs := []VOut{{Addr: "btc address 2", Amt: 1000}, {Addr: "btc address 1", Amt: 2000}}
 func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, chargeBack string) (hex string, error error) {
 
@@ -190,6 +194,7 @@ func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat in
     return sc.CreateRawTX(ins, outs, hexData)
 }
 
+// CreateRawTX
 // https://developer.bitcoin.org/reference/rpc/createrawtransaction.html
 func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (hex string, error error) {
 
@@ -253,6 +258,7 @@ func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (he
     return resp.Result, nil
 }
 
+// SignRawTX
 // https://developer.bitcoin.org/reference/rpc/signrawtransactionwithkey.html
 // priKeys: base58-encoded private keys
 func (sc *ServiceClient) SignRawTX(hex string, priKeys []string) (string, error) {
@@ -286,6 +292,7 @@ func (sc *ServiceClient) SignRawTX(hex string, priKeys []string) (string, error)
     return resp.Result.Hex, err
 }
 
+// SendRawTX
 // https://developer.bitcoin.org/reference/rpc/sendrawtransaction.html
 // 失败: 报错500, 可使用命令行测试问题
 // 格式: bitcoin-cli sendrawtransaction <signedHex>

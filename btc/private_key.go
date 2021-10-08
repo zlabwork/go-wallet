@@ -27,7 +27,7 @@ func NewPriKey(b []byte) (*PriKey, error) {
     return &PriKey{k: b}, nil
 }
 
-// 脑钱包
+// NewPriKeyBrain 脑钱包
 func NewPriKeyBrain(words, salt string) (*PriKey, error) {
     k, err := utils.HashSha256([]byte(words + salt))
     if err != nil {
@@ -38,7 +38,7 @@ func NewPriKeyBrain(words, salt string) (*PriKey, error) {
     }, nil
 }
 
-// 脑钱包 - 非通用方法
+// NewPriKeyBrainSP 脑钱包 - 非通用方法
 func NewPriKeyBrainSP(words, salt string) (*PriKey, error) {
     h1, _ := utils.HashSha256([]byte(words))
     h2, _ := utils.HashSha256([]byte(salt))

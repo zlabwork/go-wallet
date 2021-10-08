@@ -24,6 +24,7 @@ func NewTransaction() *transaction {
     return &transaction{}
 }
 
+// CreateRawTx
 // @link https://www.royalfork.org/2014/11/20/txn-demo/
 // @link https://developer.bitcoin.org/reference/transactions.html#raw-transaction-format
 func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]byte, error) {

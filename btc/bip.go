@@ -5,6 +5,7 @@ import (
     "strings"
 )
 
+// ParseBipPath
 // @docs https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki
 // m / purpose' / coin_type' / account' / change / address_index
 // format := "m/44'/0'/0'/0/0"

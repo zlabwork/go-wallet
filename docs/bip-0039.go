@@ -6,17 +6,17 @@ type wordList struct {
 }
 
 func WordList() *wordList {
-    return &wordList{}
+	return &wordList{}
 }
 
 func (word *wordList) ChineseSimple() []string {
-    return strings.Split(chineseSimplified, "\n")
+	return strings.Split(chineseSimplified, "\n")
 }
 
 func (word *wordList) Japanese() []string {
-    return strings.Split(japanese, "\n")
+	return strings.Split(japanese, "\n")
 }
 
 func (word *wordList) Korean() []string {
-    return strings.Split(korean, "\n")
+	return strings.Split(korean, "\n")
 }

@@ -1,19 +1,21 @@
 package eth
 
 import (
-	"github.com/ethereum/go-ethereum/common"
+	"encoding/hex"
+	"github.com/zlabwork/go-chain"
 )
 
-type Address struct {
-	addr common.Address
-}
+type Address chain.EthAddress
 
 func NewAddress(b []byte) *Address {
-	return &Address{
-		addr: common.BytesToAddress(b),
+	var a Address
+	if len(b) > len(a) {
+		b = b[len(b)-20:]
 	}
+	copy(a[20-len(b):], b)
+	return &a
 }
 
-func (ad *Address) String() string {
-	return ad.addr.Hex()
+func (addr *Address) String() string {
+	return "0x" + hex.EncodeToString(addr[:])
 }

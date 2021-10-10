@@ -44,5 +44,5 @@ func (pri *PriKey) Address() *Address {
 		return nil
 	}
 	addr := crypto.PubkeyToAddress(priKey.PublicKey)
-	return &Address{addr: addr}
+	return NewAddress(addr.Bytes())
 }

@@ -2,6 +2,8 @@ package chain
 
 import "math/big"
 
+type EthAddress [20]byte
+
 type ERC20 interface {
 	Name() string
 	Symbol() string

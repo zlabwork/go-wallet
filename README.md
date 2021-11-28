@@ -75,6 +75,47 @@ handle.GetBalance("0x06****11")
 // eth.NewServiceHandle("wss://mainnet.infura.io/ws/v3/xxxxxxxx")
 ```
 
+## ETH 合约
+```golang
+// prikey is keystore json file string
+priKey := `{"address":"070036c8934faa2a04c8ed042cb1532281111111","crypto":{"cipher":"aes-128-ctr","ciphertext":"","mac":""},"id":"","version":3}`
+contractAddr := common.HexToAddress("0x3B30d8eC339a1B2229aeFaf65673586638D75a4d")
+myAddr := common.HexToAddress("0x070036c8934faa2A04c8ed042cb1532281111111")
+toAddr := common.HexToAddress("0x6771C0068ae24ac6602831DceA34b1764C69c2b8")
+
+// 1. conn
+conn, err := ethclient.Dial("http://127.0.0.1:8545")
+if err != nil {
+    log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+}
+
+// 2. contract with address
+token, err := contract.NewToken(contractAddr, conn)
+if err != nil {
+    log.Fatalf("Failed to instantiate a Token contract: %v", err)
+}
+
+// get info
+token.Name(nil)              // get name
+token.Symbol(nil)            // get symbol
+token.BalanceOf(nil, myAddr) // get balance
+
+// 3. auth
+auth, err := bind.NewTransactorWithChainID(strings.NewReader(priKey), "secret password", big.NewInt(999))
+if err != nil {
+    log.Fatalf("Failed to create authorized transactor: %v", err)
+}
+
+// 4. transfer 2 token
+tx, err := token.Transfer(auth, toAddr, big.NewInt(2000000000000000000))
+if err != nil {
+    log.Fatalf("Failed to request token transfer: %v", err)
+}
+
+// tx hash
+fmt.Println(tx.Hash().String())
+```
+
 
 ## Transaction
 [Standard Pubkey Script](https://developer.bitcoin.org/devguide/transactions.html)  

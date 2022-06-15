@@ -10,6 +10,11 @@ import (
 	"github.com/zlabwork/go-chain/utils"
 )
 
+var (
+	// use for BrainSpecial
+	brainHashKey, _ = utils.HashSha256([]byte("zlab"))
+)
+
 type PriKey struct {
 	k []byte
 }
@@ -38,11 +43,11 @@ func NewPriKeyBrain(words, salt string) (*PriKey, error) {
 	}, nil
 }
 
-// NewPriKeyBrainSP 脑钱包 - 非通用方法
-func NewPriKeyBrainSP(words, salt string) (*PriKey, error) {
+// NewPriKeyBrainSpecial 脑钱包 - 非通用方法
+func NewPriKeyBrainSpecial(words, salt string) (*PriKey, error) {
 	h1, _ := utils.HashSha256([]byte(words))
 	h2, _ := utils.HashSha256([]byte(salt))
-	b := append(append(h1, h2...), hashConst...)
+	b := append(append(h1, h2...), brainHashKey...)
 	k, err := utils.HashSha256(b)
 	if err != nil {
 		return nil, err

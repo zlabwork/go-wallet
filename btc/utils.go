@@ -9,7 +9,6 @@ import (
 var (
 	curve               = btcutil.Secp256k1()
 	pubKeyCompressedLen = 33
-	hashConst, _        = utils.HashSha256([]byte("zlab")) // hash 常量
 )
 
 func checksum(data []byte) ([]byte, error) {

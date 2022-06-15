@@ -20,6 +20,7 @@ func NewAddress(b []byte) *Address {
 }
 
 // P2PKH
+// e.g. 19c4pkCL2jvTFYkZXDyUHi4ceoNze44mXE
 // @docs https://learnmeabitcoin.com/technical/public-key-hash
 // @docs https://learnmeabitcoin.com/technical/address
 // format: m/44'/0'/0' support: imToken, bitPay
@@ -27,11 +28,14 @@ func (ad *Address) P2PKH() string {
 	return p2pkh(ad.hash)
 }
 
+// P2SH
+// e.g. 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
 func (ad *Address) P2SH() string {
 	return p2sh(ad.hash)
 }
 
 // P2WPKH
+// e.g. bc1qte3vrg28lxm5yjh4579cjqzgadgmrghjm6hvjt
 // Native Address
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 // format: m/44'/0'/0' support: bitPay
@@ -52,6 +56,7 @@ func (ad *Address) P2WPKH() string {
 }
 
 // P2WSH2
+// e.g. bc1qpvw9q3u9yx9ga452yr2q4hypgnp8kqxfku9lcvxutlldqqcl06fs8pdyj8
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 // TODO :: 测试
 func (ad *Address) P2WSH2() string {
@@ -74,6 +79,7 @@ func (ad *Address) P2WSH2() string {
 }
 
 // P2WSH
+// e.g. bc1q0fawq3lvmhq47443f5xsp7l95qq4xpz5gjjkljwzw933vnectsjs2ty768
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 func (ad *Address) P2WSH() string {
 	r, err := P2WSH([][]byte{ad.pub}, 1, 1)
@@ -84,6 +90,7 @@ func (ad *Address) P2WSH() string {
 }
 
 // P2SHP2WPKH
+// e.g. 3J8VzKMkGwzneEs6imQrGX2jgNe8gwdyNn
 // p2sh-segwit
 // format: m/49'/0'/0' support: imToken
 func (ad *Address) P2SHP2WPKH() string {
@@ -102,6 +109,7 @@ func (ad *Address) P2SHP2WPKH() string {
 }
 
 // P2SHP2WSH
+// e.g. 3Ly7sZXyv9zNKKV35ntbgraLy9zaykzKQL
 // P2WSH nested in P2SH (1-of-1 multisig)
 func (ad *Address) P2SHP2WSH() string {
 	r, err := P2SHP2WSH([][]byte{ad.pub}, 1, 1)

@@ -56,21 +56,10 @@ func (ad *Address) P2WPKH() string {
 }
 
 // P2WSH
-// e.g. bc1q0fawq3lvmhq47443f5xsp7l95qq4xpz5gjjkljwzw933vnectsjs2ty768
-// https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
-func (ad *Address) P2WSH() string {
-	r, err := NewP2WSH([][]byte{ad.pub}, 1, 1)
-	if err != nil {
-		return ""
-	}
-	return r
-}
-
-// P2WSH2
 // e.g. bc1qpvw9q3u9yx9ga452yr2q4hypgnp8kqxfku9lcvxutlldqqcl06fs8pdyj8
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 // TODO :: 测试
-func (ad *Address) P2WSH2() string {
+func (ad *Address) P2WSH() string {
 	d := append([]byte{OP_PUSH_33}, ad.pub...)
 	d = append(d, OP_CHECKSIG)
 	ha, _ := utils.HashSha256(d)
@@ -87,6 +76,18 @@ func (ad *Address) P2WSH2() string {
 		return ""
 	}
 	return addr
+}
+
+// P2WSH2
+// e.g. bc1q0fawq3lvmhq47443f5xsp7l95qq4xpz5gjjkljwzw933vnectsjs2ty768
+// https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
+// TODO :: 测试
+func (ad *Address) P2WSH2() string {
+	r, err := NewMultiP2WSH([][]byte{ad.pub}, 1, 1)
+	if err != nil {
+		return ""
+	}
+	return r
 }
 
 // P2SHP2WPKH
@@ -112,7 +113,7 @@ func (ad *Address) P2SHP2WPKH() string {
 // e.g. 3Ly7sZXyv9zNKKV35ntbgraLy9zaykzKQL
 // P2WSH nested in P2SH (1-of-1 multisig)
 func (ad *Address) P2SHP2WSH() string {
-	r, err := NewP2SHP2WSH([][]byte{ad.pub}, 1, 1)
+	r, err := NewMultiP2SHP2WSH([][]byte{ad.pub}, 1, 1)
 	if err != nil {
 		return ""
 	}
@@ -121,7 +122,7 @@ func (ad *Address) P2SHP2WSH() string {
 
 // NewP2SHP2WSH
 // https://bitcoincore.org/en/segwit_wallet_dev/
-func NewP2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
+func NewMultiP2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
 	if m <= 0 || n <= 0 || m > n {
 		return "", fmt.Errorf("error OP_M OP_N")
 	}
@@ -147,7 +148,7 @@ func NewP2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
 	return p2sh(hash160), nil
 }
 
-func NewP2WSH(pubKey [][]byte, m, n int) (string, error) {
+func NewMultiP2WSH(pubKey [][]byte, m, n int) (string, error) {
 	if m <= 0 || n <= 0 || m > n {
 		return "", fmt.Errorf("error OP_M OP_N")
 	}

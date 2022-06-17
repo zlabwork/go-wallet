@@ -44,10 +44,7 @@ func (ad *Address) P2WPKH() string {
 	for _, i := range ad.hash {
 		program = append(program, int(i))
 	}
-	hrp := "bc"
-	if !isMainNet() {
-		hrp = "tb"
-	}
+	hrp := getHrpFlag()
 	addr, err := bech32.SegwitAddrEncode(hrp, 0, program)
 	if err != nil {
 		return ""
@@ -67,10 +64,7 @@ func (ad *Address) P2WSH() string {
 	for _, i := range ha {
 		program = append(program, int(i))
 	}
-	hrp := "bc"
-	if !isMainNet() {
-		hrp = "tb"
-	}
+	hrp := getHrpFlag()
 	addr, err := bech32.SegwitAddrEncode(hrp, 0, program)
 	if err != nil {
 		return ""
@@ -120,7 +114,7 @@ func (ad *Address) P2SHP2WSH() string {
 	return r
 }
 
-// NewP2SHP2WSH
+// NewMultiP2SHP2WSH
 // https://bitcoincore.org/en/segwit_wallet_dev/
 func NewMultiP2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
 	if m <= 0 || n <= 0 || m > n {
@@ -173,10 +167,7 @@ func NewMultiP2WSH(pubKey [][]byte, m, n int) (string, error) {
 	for _, i := range ha {
 		program = append(program, int(i))
 	}
-	hrp := "bc"
-	if !isMainNet() {
-		hrp = "tb"
-	}
+	hrp := getHrpFlag()
 	addr, err := bech32.SegwitAddrEncode(hrp, 0, program)
 	if err != nil {
 		return "", nil

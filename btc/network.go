@@ -1,7 +1,7 @@
 package btc
 
 var (
-	network = "mainnet" // mainnet, testnet
+	network = "mainnet" // mainnet, testnet, regtest
 )
 
 func SetNetwork(name string) {
@@ -10,6 +10,14 @@ func SetNetwork(name string) {
 
 func isMainNet() bool {
 	return network == "mainnet"
+}
+
+func isTestNet() bool {
+	return network == "testnet"
+}
+
+func isRegTest() bool {
+	return network == "regtest"
 }
 
 // name = P2PKH, P2SH, WIF
@@ -35,4 +43,16 @@ func getVer(name string) uint8 {
 	}
 
 	return 0x00
+}
+
+func getHrpFlag() string {
+
+	if isTestNet() {
+		return "tb"
+	}
+	if isRegTest() {
+		return "bcrt"
+	}
+
+	return "bc"
 }

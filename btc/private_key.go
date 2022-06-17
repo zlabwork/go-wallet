@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/mr-tron/base58"
-	"github.com/zlabwork/go-chain/utils"
+	"github.com/zlabwork/go-wallet/utils"
 )
 
 var (

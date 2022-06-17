@@ -3,7 +3,7 @@ package btc
 import (
 	btcutil "github.com/FactomProject/btcutilecc"
 	"github.com/mr-tron/base58"
-	"github.com/zlabwork/go-chain/utils"
+	"github.com/zlabwork/go-wallet/utils"
 )
 
 var (

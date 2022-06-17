@@ -2,7 +2,7 @@ package eth
 
 import (
 	"encoding/hex"
-	"github.com/zlabwork/go-chain"
+	"github.com/zlabwork/go-wallet"
 )
 
 type Address chain.EthAddress

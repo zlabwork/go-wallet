@@ -3,7 +3,7 @@ package btc
 import (
 	"fmt"
 	"github.com/sipa/bech32/ref/go/src/bech32"
-	"github.com/zlabwork/go-chain/utils"
+	"github.com/zlabwork/go-wallet/utils"
 )
 
 type Address struct {

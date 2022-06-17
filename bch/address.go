@@ -1,7 +1,7 @@
 package bch
 
 import (
-	"github.com/zlabwork/go-chain/utils"
+	"github.com/zlabwork/go-wallet/utils"
 	"golang.org/x/crypto/ripemd160"
 )
 

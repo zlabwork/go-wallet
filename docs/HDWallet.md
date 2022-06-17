@@ -6,8 +6,8 @@ package main
 import (
     "encoding/hex"
     "fmt"
-    "github.com/tyler-smith/go-bip32"
     "github.com/tyler-smith/go-bip39"
+    "github.com/zlabwork/go-bip32"
     "github.com/zlabwork/go-chain/btc"
     "github.com/zlabwork/go-chain/docs"
 )

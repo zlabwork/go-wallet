@@ -19,27 +19,27 @@ func NewAddress(b []byte) *Address {
 	}
 }
 
-// P2PKH
+// P2pkh
 // e.g. 19c4pkCL2jvTFYkZXDyUHi4ceoNze44mXE
 // @docs https://learnmeabitcoin.com/technical/public-key-hash
 // @docs https://learnmeabitcoin.com/technical/address
 // format: m/44'/0'/0' support: imToken, bitPay
-func (ad *Address) P2PKH() string {
+func (ad *Address) P2pkh() string {
 	return p2pkh(ad.hash)
 }
 
-// P2SH
+// P2sh
 // e.g. 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
-func (ad *Address) P2SH() string {
+func (ad *Address) P2sh() string {
 	return p2sh(ad.hash)
 }
 
-// P2WPKH
+// P2wpkh
 // e.g. bc1qte3vrg28lxm5yjh4579cjqzgadgmrghjm6hvjt
 // Native Address
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 // format: m/44'/0'/0' support: bitPay
-func (ad *Address) P2WPKH() string {
+func (ad *Address) P2wpkh() string {
 	var program []int
 	for _, i := range ad.hash {
 		program = append(program, int(i))
@@ -52,11 +52,11 @@ func (ad *Address) P2WPKH() string {
 	return addr
 }
 
-// P2WSH
+// P2wsh
 // e.g. bc1qpvw9q3u9yx9ga452yr2q4hypgnp8kqxfku9lcvxutlldqqcl06fs8pdyj8
 // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 // TODO :: 测试
-func (ad *Address) P2WSH() string {
+func (ad *Address) P2wsh() string {
 	d := append([]byte{OP_PUSH_33}, ad.pub...)
 	d = append(d, OP_CHECKSIG)
 	ha, _ := utils.HashSha256(d)
@@ -72,23 +72,11 @@ func (ad *Address) P2WSH() string {
 	return addr
 }
 
-// P2WSH2
-// e.g. bc1q0fawq3lvmhq47443f5xsp7l95qq4xpz5gjjkljwzw933vnectsjs2ty768
-// https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
-// TODO :: 测试
-func (ad *Address) P2WSH2() string {
-	r, err := NewMultiP2WSH([][]byte{ad.pub}, 1, 1)
-	if err != nil {
-		return ""
-	}
-	return r
-}
-
-// P2SHP2WPKH
+// P2wpkhInP2sh - P2WPKH nested in P2SH
 // e.g. 3J8VzKMkGwzneEs6imQrGX2jgNe8gwdyNn
 // p2sh-segwit
 // format: m/49'/0'/0' support: imToken
-func (ad *Address) P2SHP2WPKH() string {
+func (ad *Address) P2wpkhInP2sh() string {
 
 	// public key used in P2SH-P2WPKH MUST be compressed, i.e. 33 bytes in size
 	if len(ad.pub) != 33 {
@@ -103,20 +91,31 @@ func (ad *Address) P2SHP2WPKH() string {
 	return p2sh(ha)
 }
 
-// P2SHP2WSH
+// MultiP2wshInP2sh
 // e.g. 3Ly7sZXyv9zNKKV35ntbgraLy9zaykzKQL
 // P2WSH nested in P2SH (1-of-1 multisig)
-func (ad *Address) P2SHP2WSH() string {
-	r, err := NewMultiP2SHP2WSH([][]byte{ad.pub}, 1, 1)
+func (ad *Address) MultiP2wshInP2sh() string {
+	r, err := MultiP2wshInP2sh([][]byte{ad.pub}, 1, 1)
 	if err != nil {
 		return ""
 	}
 	return r
 }
 
-// NewMultiP2SHP2WSH
+// MultiP2wsh
+// e.g. bc1q0fawq3lvmhq47443f5xsp7l95qq4xpz5gjjkljwzw933vnectsjs2ty768
+// https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
+func (ad *Address) MultiP2wsh() string {
+	r, err := MultiP2wsh([][]byte{ad.pub}, 1, 1)
+	if err != nil {
+		return ""
+	}
+	return r
+}
+
+// MultiP2wshInP2sh -  P2WSH nested in P2SH (1-of-1 multisig)
 // https://bitcoincore.org/en/segwit_wallet_dev/
-func NewMultiP2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
+func MultiP2wshInP2sh(pubKey [][]byte, m, n int) (string, error) {
 	if m <= 0 || n <= 0 || m > n {
 		return "", fmt.Errorf("error OP_M OP_N")
 	}
@@ -142,7 +141,8 @@ func NewMultiP2SHP2WSH(pubKey [][]byte, m, n int) (string, error) {
 	return p2sh(hash160), nil
 }
 
-func NewMultiP2WSH(pubKey [][]byte, m, n int) (string, error) {
+// MultiP2wsh - P2WSH (1-of1 multisig)
+func MultiP2wsh(pubKey [][]byte, m, n int) (string, error) {
 	if m <= 0 || n <= 0 || m > n {
 		return "", fmt.Errorf("error OP_M OP_N")
 	}

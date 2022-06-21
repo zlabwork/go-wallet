@@ -12,8 +12,8 @@ import "github.com/zlabwork/go-wallet/btc"
 priKey := btc.NewPriKeyRandom()
 priKey.WIF() // L211iZmidtxLQ2s7hzM9BYacPUu2asT1KkCkyrTbNbDib2N85ai5
 pubKey := priKey.PubKey()
-address1 := pubKey.Address().P2PKH() // 19c4pkCL2jvTFYkZXDyUHi4ceoNze44mXE
-address2 := pubKey.Address().P2SH()  // 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
+address1 := pubKey.Address().P2pkh() // 19c4pkCL2jvTFYkZXDyUHi4ceoNze44mXE
+address2 := pubKey.Address().P2sh()  // 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
 ```
 ```golang
 // 交易
@@ -53,7 +53,7 @@ txId, err := cli.SendRawTX(signedHex)
 import "github.com/zlabwork/go-wallet/bch"
 
 priKey := bch.NewPriKeyRandom()
-address := priKey.PubKey().Address().P2PKH()
+address := priKey.PubKey().Address().P2pkh()
 log.Println(address) // qzz6eq5we2qdxg29jkzxkxafc34xhduk7vhayz3z06
 ```
 

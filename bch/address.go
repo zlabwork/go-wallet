@@ -8,7 +8,7 @@ import (
 type Address struct {
 	pub  []byte
 	hash []byte
-	pre  string // bchreg、bchtest、bchsim
+	pre  string // bchreg, bchtest, bchsim
 }
 
 func NewAddress(b []byte) *Address {
@@ -20,10 +20,10 @@ func NewAddress(b []byte) *Address {
 	}
 }
 
-func (ad *Address) P2PKH() string {
+func (ad *Address) P2pkh() string {
 	return createCashAddress(ad.hash, ad.pre, addrTypeP2PKH)
 }
 
-func (ad *Address) P2SH() string {
+func (ad *Address) P2sh() string {
 	return createCashAddress(ad.hash, ad.pre, addrTypeP2SH)
 }

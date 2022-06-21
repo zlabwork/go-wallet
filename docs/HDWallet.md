@@ -63,6 +63,6 @@ func main() {
     fmt.Println("私钥:", hex.EncodeToString(key.Key))
     fmt.Println("公钥:", hex.EncodeToString(key.PublicKey().Key))
     pubKey, _ := btc.NewPubKey(key.PublicKey().Key)
-    fmt.Println("地址:", pubKey.Address().P2PKH())
+    fmt.Println("地址:", pubKey.Address().P2pkh())
 }
 ```

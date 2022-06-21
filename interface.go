@@ -12,14 +12,14 @@ type PubKey interface {
 }
 
 type BtcAddress interface {
-	P2PKH() string
-	P2SH() string
-	P2WPKH() string
-	P2WSH() string
-	P2SHP2WPKH() string
+	P2pkh() string
+	P2sh() string
+	P2wpkh() string
+	P2wsh() string
+	P2wpkhInP2sh() string
 }
 
 type BchAddress interface {
-	P2PKH() string
-	P2SH() string
+	P2pkh() string
+	P2sh() string
 }

@@ -26,7 +26,7 @@ c := &btc.HandleConfigs{
     User: "user",
     Pass: "pass123456",
 }
-cli := btc.NewServiceClient(btc.NewServiceHandle(c))
+cli := btc.NewServiceClient(c)
 
 // 输入 [tx:vout]
 ins := map[string]uint32{
@@ -36,7 +36,7 @@ ins := map[string]uint32{
 // 输出
 outs := map[string]int64{
     "bc1q7k85507tl9n2aguczwkjn9ytjvjvtc07g5yqsk": 2499000000, // 24.99 BTC
-    "1MVf99Vv8ZbFXXL4UwUnQbTLaAphBNeGFW":         2499000000,
+    "1MVf99Vv8ZbFXXL4UwUnQbTLaAphBNeGFW":         2499000000, // int64(24.99 * math.Pow10(8))
 }
 // 生成交易 chargeBack 为找零地址
 // b, err := cli.CreateTransferAll(ins, "1PPQCxxDqSpjxu8N2kEkEimrfUcpWT4Duc", 10)

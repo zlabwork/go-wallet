@@ -22,11 +22,17 @@ type ServiceClient struct {
 	endpoint string
 }
 
-func NewServiceClient(handle *serviceHandle) *ServiceClient {
+type HandleConfigs struct {
+	Host string // http://127.0.0.1:18443
+	User string
+	Pass string
+}
+
+func NewServiceClient(c *HandleConfigs) *ServiceClient {
 	return &ServiceClient{
-		req:      handle.req,
-		auth:     "Basic " + base64.StdEncoding.EncodeToString([]byte(handle.cfg.User+":"+handle.cfg.Pass)),
-		endpoint: handle.cfg.Host,
+		req:      zlibs.NewHttpLib(),
+		auth:     "Basic " + base64.StdEncoding.EncodeToString([]byte(c.User+":"+c.Pass)),
+		endpoint: c.Host,
 	}
 }
 

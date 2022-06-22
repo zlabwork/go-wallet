@@ -1,4 +1,4 @@
-package chain
+package wallet
 
 type PriKey interface {
 	Bytes() []byte

@@ -26,7 +26,7 @@ c := &btc.HandleConfigs{
     User: "user",
     Pass: "pass123456",
 }
-cli := btc.NewServiceClient(c)
+cli := btc.NewRpcClient(c)
 
 // 输入 [tx:vout]
 ins := map[string]uint32{

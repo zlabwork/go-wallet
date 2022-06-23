@@ -1,112 +1,16 @@
 package btc
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/zlabwork/go-zlibs"
-	"io/ioutil"
 	"math"
-	"strconv"
-	"strings"
-	"time"
 )
-
-const (
-	minTxAmount = 546 // satoshis
-)
-
-type ServiceClient struct {
-	req      *zlibs.HttpLib
-	auth     string
-	endpoint string
-}
-
-type HandleConfigs struct {
-	Host string // http://127.0.0.1:18443
-	User string
-	Pass string
-}
-
-func NewServiceClient(c *HandleConfigs) *ServiceClient {
-	return &ServiceClient{
-		req:      zlibs.NewHttpLib(),
-		auth:     "Basic " + base64.StdEncoding.EncodeToString([]byte(c.User+":"+c.Pass)),
-		endpoint: c.Host,
-	}
-}
-
-func (sc *ServiceClient) Request(method string, params []interface{}) ([]byte, error) {
-
-	reqId := strconv.FormatInt(time.Now().UnixNano(), 10)
-	type rd struct {
-		Ver    string        `json:"jsonrpc"`
-		Id     string        `json:"id"`
-		Method string        `json:"method"`
-		Params []interface{} `json:"params"`
-	}
-	b, err := json.Marshal(rd{
-		Ver:    "1.0",
-		Id:     reqId,
-		Method: method,
-		Params: params,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// setting header & body
-	data := string(b)
-	header := make(map[string]string)
-	header["Authorization"] = sc.auth
-	sc.req.SetHeaders(header)
-	resp, err := sc.req.RequestRaw("POST", sc.endpoint, []byte(data))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// http body
-	body, err := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("code: %d, message: %s", resp.StatusCode, strings.Trim(string(body), "\n"))
-	}
-	return body, err
-}
-
-// GetBlockHash
-// https://developer.bitcoin.org/reference/rpc/getblockhash.html
-func (sc *ServiceClient) GetBlockHash(blockHeight int64) (string, error) {
-	b, err := sc.Request("getblockhash", []interface{}{blockHeight})
-	if err != nil {
-		return "", err
-	}
-	return string(b[11:75]), nil
-}
-
-// GetBlock
-// https://developer.bitcoin.org/reference/rpc/getblock.html
-func (sc *ServiceClient) GetBlock(blockHeight int64) ([]byte, error) {
-	// 1. 获取块hash
-	h, err := sc.GetBlockHash(blockHeight)
-	if err != nil {
-		return nil, err
-	}
-
-	// 2. 获取块数据
-	b, err := sc.Request("getblock", []interface{}{h, 2})
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
-}
 
 // GetTxOut
 // https://developer.bitcoin.org/reference/rpc/gettxout.html
-func (sc *ServiceClient) GetTxOut(tx string, index int) (*txOut, error) {
+func (rc *RpcClient) GetTxOut(tx string, index int) (*txOut, error) {
 
-	b, err := sc.Request("gettxout", []interface{}{tx, index})
+	b, err := rc.Request("gettxout", []interface{}{tx, index})
 	if err != nil {
 		return nil, err
 	}
@@ -120,12 +24,12 @@ func (sc *ServiceClient) GetTxOut(tx string, index int) (*txOut, error) {
 	return &out, nil
 }
 
-func (sc *ServiceClient) CreateTransferAll(ins map[string]uint32, addr string, sat int64) (hex string, error error) {
+func (rc *RpcClient) CreateTransferAll(ins map[string]uint32, addr string, sat int64) (hex string, error error) {
 
 	var t int64
 	var inT []VIn
 	for tx, n := range ins {
-		ou, err := sc.GetTxOut(tx, int(n))
+		ou, err := rc.GetTxOut(tx, int(n))
 		if err != nil {
 			return "", err
 		}
@@ -141,10 +45,10 @@ func (sc *ServiceClient) CreateTransferAll(ins map[string]uint32, addr string, s
 	size := 148*len(ins) + 34 + 10
 	fee := int64(size) * sat
 
-	return sc.CreateRawTX(inT, []VOut{{Addr: addr, Amt: t - fee}}, "")
+	return rc.CreateRawTX(inT, []VOut{{Addr: addr, Amt: t - fee}}, "")
 }
 
-func (sc *ServiceClient) CreateTXUseMap(ins map[string]uint32, outs map[string]int64, hexData string, sat int64, chargeBack string) (hex string, error error) {
+func (rc *RpcClient) CreateTXUseMap(ins map[string]uint32, outs map[string]int64, hexData string, sat int64, chargeBack string) (hex string, error error) {
 	var inT []VIn
 	var outT []VOut
 	for tx, n := range ins {
@@ -153,17 +57,17 @@ func (sc *ServiceClient) CreateTXUseMap(ins map[string]uint32, outs map[string]i
 	for ad, n := range outs {
 		outT = append(outT, VOut{Addr: ad, Amt: n})
 	}
-	return sc.CreateTX(inT, outT, hexData, sat, chargeBack)
+	return rc.CreateTX(inT, outT, hexData, sat, chargeBack)
 }
 
 // CreateTX
 // outs := []VOut{{Addr: "btc address 2", Amt: 1000}, {Addr: "btc address 1", Amt: 2000}}
-func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, chargeBack string) (hex string, error error) {
+func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, chargeBack string) (hex string, error error) {
 
 	// 1. total in
 	var totalIn int64
 	for _, in := range ins {
-		txOut, err := sc.GetTxOut(in.Tx, int(in.N))
+		txOut, err := rc.GetTxOut(in.Tx, int(in.N))
 		if err != nil {
 			return "", err
 		}
@@ -197,12 +101,12 @@ func (sc *ServiceClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat in
 		fee += 34 * sat
 	}
 
-	return sc.CreateRawTX(ins, outs, hexData)
+	return rc.CreateRawTX(ins, outs, hexData)
 }
 
 // CreateRawTX
 // https://developer.bitcoin.org/reference/rpc/createrawtransaction.html
-func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (hex string, error error) {
+func (rc *RpcClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (hex string, error error) {
 
 	// 1. check
 	if len(ins) < 1 {
@@ -241,7 +145,7 @@ func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (he
 	param := []interface{}{inData, outData}
 
 	// 4.
-	b, err := sc.Request("createrawtransaction", param)
+	b, err := rc.Request("createrawtransaction", param)
 	if err != nil {
 		return "", err
 	}
@@ -267,11 +171,11 @@ func (sc *ServiceClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (he
 // SignRawTX
 // https://developer.bitcoin.org/reference/rpc/signrawtransactionwithkey.html
 // priKeys: base58-encoded private keys
-func (sc *ServiceClient) SignRawTX(hex string, priKeys []string) (string, error) {
+func (rc *RpcClient) SignRawTX(hex string, priKeys []string) (string, error) {
 
 	// 1.
 	param := []interface{}{hex, priKeys}
-	b, err := sc.Request("signrawtransactionwithkey", param)
+	b, err := rc.Request("signrawtransactionwithkey", param)
 	if err != nil {
 		return "", err
 	}
@@ -306,10 +210,10 @@ func (sc *ServiceClient) SignRawTX(hex string, priKeys []string) (string, error)
 // 报错1: Fee exceeds maximum configured by user (e.g. -maxtxfee, maxfeerate)
 // 报错2: min relay fee not met, 100 < 141
 // 原因: 手续费用太高或太低
-func (sc *ServiceClient) SendRawTX(signedHex string) (tx string, error error) {
+func (rc *RpcClient) SendRawTX(signedHex string) (tx string, error error) {
 
 	param := []interface{}{signedHex}
-	b, err := sc.Request("sendrawtransaction", param)
+	b, err := rc.Request("sendrawtransaction", param)
 	if err != nil {
 		return "", fmt.Errorf("%s; it maybe invalid fee or txn-mempool-conflict; try test command `bitcoin-cli sendrawtransaction <signedHex>`", err.Error())
 	}

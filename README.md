@@ -1,9 +1,15 @@
-## 安装
+## Install
 ```bash
 go get github.com/zlabwork/go-wallet
 
-go get github.com/zlabwork/go-wallet@v1.4.0
+go get github.com/zlabwork/go-wallet@v1.5.0
 ```
+
+
+## Todo 
+Support transfer for P2sh, P2wsh, MultiP2wsh, MultiP2wshInP2sh
+
+
 ## BTC
 ```golang
 // 地址与私钥
@@ -40,7 +46,7 @@ outs := map[string]int64{
 }
 // 生成交易 chargeBack 为找零地址
 // b, err := cli.CreateTransferAll(ins, "1PPQCxxDqSpjxu8N2kEkEimrfUcpWT4Duc", 10)
-b, _ := cli.CreateTXUseMap(ins, outs, "", 10, "1PPQCxxDqSpjxu8N2kEkEimrfUcpWT4Duc")
+b, _ := cli.CreateTXAlias(ins, outs, "", 10, "1PPQCxxDqSpjxu8N2kEkEimrfUcpWT4Duc")
 // 交易签名
 signedHex, _ := cli.SignRawTX(b, []string{"cUQMEcP7RA8jJ32hghcCwSv55o29SzwS77LpZ5GSU5fsNi3tHFXc"})
 // 发送交易数据

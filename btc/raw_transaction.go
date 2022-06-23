@@ -7,16 +7,6 @@ import (
 	"github.com/mr-tron/base58"
 )
 
-type VOut struct {
-	Addr string
-	Amt  int64 // satoshis (1BTC = 1*10^8 sat)
-}
-
-type VIn struct {
-	Tx string // txId
-	N  uint32 // vout
-}
-
 type transaction struct {
 }
 

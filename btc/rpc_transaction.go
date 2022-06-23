@@ -2,8 +2,11 @@ package btc
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 )
 
 // GetTxOut
@@ -45,14 +48,20 @@ func (rc *RpcClient) CreateTransferAll(ins map[string]uint32, addr string, sat i
 	size := 148*len(ins) + 34 + 10
 	fee := int64(size) * sat
 
-	return rc.CreateRawTX(inT, []VOut{{Addr: addr, Amt: t - fee}}, "")
+	return rc.createRawTX(inT, []VOut{{Addr: addr, Amt: t - fee}}, "")
 }
 
-func (rc *RpcClient) CreateTXUseMap(ins map[string]uint32, outs map[string]int64, hexData string, sat int64, chargeBack string) (hex string, error error) {
+// CreateTXAlias - Alias for CreateTX
+func (rc *RpcClient) CreateTXAlias(ins []string, outs map[string]int64, hexData string, sat int64, chargeBack string) (hex string, error error) {
 	var inT []VIn
 	var outT []VOut
-	for tx, n := range ins {
-		inT = append(inT, VIn{Tx: tx, N: n})
+	for _, str := range ins {
+		s := strings.Split(str, ":")
+		n, err := strconv.ParseUint(strings.TrimSpace(s[1]), 10, 64)
+		if err != nil {
+			return "", errors.New(str + ", error vout format")
+		}
+		inT = append(inT, VIn{Tx: strings.TrimSpace(s[0]), N: uint32(n)})
 	}
 	for ad, n := range outs {
 		outT = append(outT, VOut{Addr: ad, Amt: n})
@@ -87,6 +96,7 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 		totalOut += out.Amt
 	}
 
+	// TODO: 1. how to calculate if chargeBack in the outs list 2. confirm the calculate process
 	// 3. fee sat
 	size := 148*len(ins) + 34*len(outs) + 10
 	fee := int64(size) * sat
@@ -101,12 +111,12 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 		fee += 34 * sat
 	}
 
-	return rc.CreateRawTX(ins, outs, hexData)
+	return rc.createRawTX(ins, outs, hexData)
 }
 
-// CreateRawTX
+// CreateRawTX - TODO: Fix the address duplicated in VOut
 // https://developer.bitcoin.org/reference/rpc/createrawtransaction.html
-func (rc *RpcClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (hex string, error error) {
+func (rc *RpcClient) createRawTX(ins []VIn, outs []VOut, hexData string) (hex string, error error) {
 
 	// 1. check
 	if len(ins) < 1 {
@@ -125,6 +135,7 @@ func (rc *RpcClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (hex st
 	type inType struct {
 		TxId string `json:"txid"`
 		VOut uint32 `json:"vout"`
+		// Seq  uint32 `json:"sequence"`
 	}
 	var inData []inType
 	for _, item := range ins {
@@ -137,14 +148,14 @@ func (rc *RpcClient) CreateRawTX(ins []VIn, outs []VOut, hexData string) (hex st
 	// 3. out
 	outData := make(map[string]interface{})
 	for _, ou := range outs {
-		outData[ou.Addr] = float64(ou.Amt) * math.Pow10(-8)
+		outData[ou.Addr] = float64(ou.Amt) / 100000000 // FIXME: 浮点精度问题
 	}
 	if len(hexData) > 0 {
 		outData["data"] = hexData
 	}
-	param := []interface{}{inData, outData}
 
 	// 4.
+	param := []interface{}{inData, outData}
 	b, err := rc.Request("createrawtransaction", param)
 	if err != nil {
 		return "", err

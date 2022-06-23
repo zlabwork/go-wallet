@@ -15,6 +15,16 @@ const (
 	minTxAmount = 546 // satoshis
 )
 
+type VOut struct {
+	Addr string
+	Amt  int64 // satoshis (1BTC = 1*10^8 sat)
+}
+
+type VIn struct {
+	Tx string // txId
+	N  uint32 // vout
+}
+
 type RpcClient struct {
 	req      *zlibs.HttpLib
 	auth     string

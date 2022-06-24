@@ -62,7 +62,7 @@ func (rc *RpcClient) CreateTransferAll(ins []string, addr string, sat int64) (he
 }
 
 // CreateTXAlias - Alias for CreateTX
-func (rc *RpcClient) CreateTXAlias(ins []string, outs map[string]int64, hexData string, sat int64, chargeBack string) (hex string, error error) {
+func (rc *RpcClient) CreateTXAlias(ins []string, outs map[string]int64, hexData string, sat int64, changeAddress string) (hex string, error error) {
 	var inT []VIn
 	var outT []VOut
 	for _, str := range ins {
@@ -76,12 +76,12 @@ func (rc *RpcClient) CreateTXAlias(ins []string, outs map[string]int64, hexData 
 	for ad, n := range outs {
 		outT = append(outT, VOut{Addr: ad, Amt: n})
 	}
-	return rc.CreateTX(inT, outT, hexData, sat, chargeBack)
+	return rc.CreateTX(inT, outT, hexData, sat, changeAddress)
 }
 
 // CreateTX
 // outs := []VOut{{Addr: "btc address 2", Amt: 1000}, {Addr: "btc address 1", Amt: 2000}}
-func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, chargeBack string) (hex string, error error) {
+func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, changeAddress string) (hex string, error error) {
 
 	// 1. total in
 	var totalIn int64
@@ -99,14 +99,18 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 
 	// 2. total out
 	var totalOut int64
+	isInOuts := false
 	for _, out := range outs {
+		if out.Addr == changeAddress {
+			isInOuts = true
+		}
 		if out.Amt < minTxAmount {
 			return "", fmt.Errorf("transfer %d satoshis, less than minimum amount %d satoshis", out.Amt, minTxAmount)
 		}
 		totalOut += out.Amt
 	}
 
-	// TODO: 1. how to calculate if chargeBack in the outs list 2. confirm the calculate process
+	// TODO: 1. confirm the calculate process
 	// 3. fee sat
 	size := 148*len(ins) + 34*len(outs) + 10
 	fee := int64(size) * sat
@@ -116,9 +120,17 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 	}
 
 	// 4. charge back
-	if left-34*sat > minTxAmount {
-		outs = append(outs, VOut{Addr: chargeBack, Amt: left - 34*sat})
-		fee += 34 * sat
+	if isInOuts {
+		for idx, out := range outs {
+			if out.Addr == changeAddress {
+				outs[idx].Amt += left
+			}
+		}
+	} else {
+		if left-34*sat > minTxAmount {
+			outs = append(outs, VOut{Addr: changeAddress, Amt: left - 34*sat})
+			fee += 34 * sat
+		}
 	}
 
 	return rc.createRawTX(ins, outs, hexData)

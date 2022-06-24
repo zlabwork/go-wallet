@@ -7,6 +7,20 @@ import (
 	"github.com/mr-tron/base58"
 )
 
+type addrDesc struct {
+	Ver      uint8
+	AddrType string
+	Addr     string
+	Hash160  []byte
+}
+
+type msgTx struct {
+	Version  int32
+	TxIn     []*VIn
+	TxOut    []*VOut
+	LockTime uint32
+}
+
 type transaction struct {
 }
 
@@ -20,10 +34,10 @@ func NewTransaction() *transaction {
 func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]byte, error) {
 
 	// 格式: 01000000 NUM01 INPUT NUM02 OUTPUTS 00000000
-	ver := []byte{0x01, 0x00, 0x00, 0x00}
-	t1 := byte(len(ins))
-	t2 := byte(len(outs))
-	lt := []byte{0x00, 0x00, 0x00, 0x00} // 锁定时间
+	ver := []byte{0x01, 0x00, 0x00, 0x00} // 版本
+	t1 := byte(len(ins))                  // 输入数量
+	t2 := byte(len(outs))                 // 输出数量
+	lt := []byte{0x00, 0x00, 0x00, 0x00}  // 锁定时间
 
 	// inputs
 	var inputs []byte
@@ -38,7 +52,7 @@ func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]b
 	// outputs
 	var outputs []byte
 	for _, o := range outs {
-		ou, err := tx.txOut(o.Addr, o.Amt)
+		ou, err := tx.txOut(o)
 		if err != nil {
 			return nil, err
 		}
@@ -54,14 +68,14 @@ func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]b
 }
 
 // FIXME:: 未完待续
+// @docs https://www.royalfork.org/2014/11/20/txn-demo/
 // @link https://developer.bitcoin.org/reference/transactions.html#txin-a-transaction-input-non-coinbase
 func (tx *transaction) txIn(in VIn) ([]byte, error) {
+	// ======================================================================
+	// 格式: tx的反转 + INDEX (uint32) + length of script + script + 0xFFFFFFFF
+	// ======================================================================
 
-	// vOut index
-	idx := make([]byte, 4)
-	binary.LittleEndian.PutUint32(idx, in.N)
-
-	// txId - little-endian 反转
+	// 1. txId - little-endian 反转
 	txId1, err := hex.DecodeString(in.Tx)
 	l := len(txId1)
 	txId := make([]byte, l)
@@ -69,7 +83,11 @@ func (tx *transaction) txIn(in VIn) ([]byte, error) {
 		txId[i] = txId1[l-i-1]
 	}
 
-	// TODO :: 签名
+	// 2. vOut index
+	idx := make([]byte, 4)
+	binary.LittleEndian.PutUint32(idx, in.N)
+
+	// TODO :: 签名格式
 	// Signature contains 5 items:
 	// 1 byte length of the following 2 fields,
 	// the DER encoded signature,
@@ -80,8 +98,8 @@ func (tx *transaction) txIn(in VIn) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	len := byte(len(sig)) // TODO :: length
-	end := []byte{0xff, 0xff, 0xff, 0xff}
+	len := byte(len(sig))
+	end := []byte{0xFF, 0xFF, 0xFF, 0xFF}
 
 	var r []byte
 	r = append(r, txId...)
@@ -93,22 +111,31 @@ func (tx *transaction) txIn(in VIn) ([]byte, error) {
 	return r, nil
 }
 
+// @docs https://www.royalfork.org/2014/11/20/txn-demo/
 // @link https://developer.bitcoin.org/reference/transactions.html#txout-a-transaction-output
-func (tx *transaction) txOut(addr string, sat int64) ([]byte, error) {
+func (tx *transaction) txOut(out VOut) ([]byte, error) {
 
+	// ============================================
 	// 格式: sat value + pk_script bytes + pk_script
 	// pk_script 的最大长度 10,000 bytes
+	// ============================================
 
+	addr := out.Addr
+	sat := out.Amt
+
+	// 1. amount in satoshis
 	val := make([]byte, 8)
 	binary.LittleEndian.PutUint64(val, uint64(sat))
+
+	// 2. 锁定脚本
 	pks, err := tx.pkScript(addr)
 	if err != nil {
 		return nil, err
 	}
 
-	// length
+	// 3. length
 	bf := bytes.NewBuffer(nil)
-	binary.Write(bf, binary.BigEndian, uint8(len(pks))) // TODO :: 长度是否合适？
+	binary.Write(bf, binary.BigEndian, uint8(len(pks)))
 	l := bf.Bytes()
 
 	var r []byte
@@ -120,18 +147,18 @@ func (tx *transaction) txOut(addr string, sat int64) ([]byte, error) {
 // 锁定脚本 - Lock Script
 func (tx *transaction) pkScript(addr string) ([]byte, error) {
 
-	v, b, err := tx.parseAddr(addr)
+	desc, err := tx.parseAddr(addr)
 	if err != nil {
 		return nil, err
 	}
 	var r []byte
 
-	switch v {
+	switch desc.Ver {
 	case 0x00, 0x6F: // P2PKH
 		r = append(r, OP_DUP)
 		r = append(r, OP_HASH160)
-		r = append(r, byte(len(b))) // 0x14, Push 20 bytes as data TODO :: 是否进一步确认？
-		r = append(r, b...)
+		r = append(r, byte(len(desc.Hash160))) // 0x14, Push 20 bytes as data TODO :: 是否进一步确认？
+		r = append(r, desc.Hash160...)
 		r = append(r, OP_EQUALVERIFY)
 		r = append(r, OP_CHECKSIG)
 
@@ -142,8 +169,18 @@ func (tx *transaction) pkScript(addr string) ([]byte, error) {
 	return r, nil
 }
 
-func (tx *transaction) parseAddr(addr string) (uint8, []byte, error) {
+func (tx *transaction) parseAddr(addr string) (*addrDesc, error) {
+
 	// TODO :: 验证 checksum
 	b, err := base58.Decode(addr)
-	return b[0], b[1:21], err
+	if err != nil {
+		return nil, err
+	}
+
+	return &addrDesc{
+		AddrType: "p2pkh",
+		Addr:     addr,
+		Ver:      b[0],
+		Hash160:  b[1:21],
+	}, nil
 }

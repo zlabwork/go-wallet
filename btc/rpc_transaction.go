@@ -12,7 +12,7 @@ import (
 
 // GetTxOut
 // https://developer.bitcoin.org/reference/rpc/gettxout.html
-func (rc *RpcClient) GetTxOut(tx string, index int) (*txOut, error) {
+func (rc *RpcClient) GetTxOut(tx string, index uint32) (*txOut, error) {
 
 	b, err := rc.Request("gettxout", []interface{}{tx, index})
 	if err != nil {
@@ -37,7 +37,7 @@ func (rc *RpcClient) CreateTransferAll(ins []string, addr string, sat int64) (he
 		tx := strings.TrimSpace(s[0])
 		n, err := strconv.ParseUint(strings.TrimSpace(s[1]), 10, 64)
 		// GetTxOut
-		ou, err := rc.GetTxOut(tx, int(n))
+		ou, err := rc.GetTxOut(tx, uint32(n))
 		if err != nil {
 			return "", err
 		}
@@ -86,7 +86,7 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 	// 1. total in
 	var totalIn int64
 	for _, in := range ins {
-		txOut, err := rc.GetTxOut(in.Tx, int(in.N))
+		txOut, err := rc.GetTxOut(in.Tx, in.N)
 		if err != nil {
 			return "", err
 		}

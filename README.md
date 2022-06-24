@@ -35,9 +35,10 @@ c := &btc.HandleConfigs{
 cli := btc.NewRpcClient(c)
 
 // 输入 [tx:vout]
-ins := map[string]uint32{
-    "47c1c015beceb04c9772bb0575366078bc1f26edaf7bd271a1e31369ee1a88a3": 0,
-    "166858e738b77da7164a26e17f5bf2ffc6cfec0c10537a3810306aa9a3d0b309": 0,
+ins := []string{
+    "47c1c015beceb04c9772bb0575366078bc1f26edaf7bd271a1e31369ee1a88a3:0",
+    "47c1c015beceb04c9772bb0575366078bc1f26edaf7bd271a1e31369ee1a88a3:1",
+    "166858e738b77da7164a26e17f5bf2ffc6cfec0c10537a3810306aa9a3d0b309:0",
 }
 // 输出
 outs := map[string]int64{

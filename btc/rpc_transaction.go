@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/shopspring/decimal"
 	"math"
 	"strconv"
 	"strings"
@@ -27,21 +28,30 @@ func (rc *RpcClient) GetTxOut(tx string, index int) (*txOut, error) {
 	return &out, nil
 }
 
-func (rc *RpcClient) CreateTransferAll(ins map[string]uint32, addr string, sat int64) (hex string, error error) {
+func (rc *RpcClient) CreateTransferAll(ins []string, addr string, sat int64) (hex string, error error) {
 
 	var t int64
 	var inT []VIn
-	for tx, n := range ins {
+	for _, str := range ins {
+		s := strings.Split(str, ":")
+		tx := strings.TrimSpace(s[0])
+		n, err := strconv.ParseUint(strings.TrimSpace(s[1]), 10, 64)
+		// GetTxOut
 		ou, err := rc.GetTxOut(tx, int(n))
 		if err != nil {
 			return "", err
 		}
-		v := int64(ou.Result.Value * math.Pow10(8))
+
+		v, err := strconv.ParseInt(decimal.NewFromFloat(ou.Result.Value).Mul(decimal.NewFromInt(100000000)).String(), 10, 64)
+		if err != nil {
+			return "", err
+		}
+
 		if v < minTxAmount {
 			return "", fmt.Errorf("%s current %d satoshis, less than minimum amount %d satoshis", tx, v, minTxAmount)
 		}
 		t += v
-		inT = append(inT, VIn{Tx: tx, N: n})
+		inT = append(inT, VIn{Tx: tx, N: uint32(n)})
 	}
 
 	// fees
@@ -148,7 +158,8 @@ func (rc *RpcClient) createRawTX(ins []VIn, outs []VOut, hexData string) (hex st
 	// 3. out
 	outData := make(map[string]interface{})
 	for _, ou := range outs {
-		outData[ou.Addr] = float64(ou.Amt) / 100000000 // FIXME: 浮点精度问题
+		n := decimal.NewFromInt(ou.Amt).Div(decimal.NewFromInt(100000000)) // ou.Amt / 10^8
+		outData[ou.Addr] = n.String()
 	}
 	if len(hexData) > 0 {
 		outData["data"] = hexData

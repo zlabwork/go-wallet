@@ -67,14 +67,10 @@ type ScriptPubKey struct {
 	Addresses []string `json:"addresses"`
 }
 
-type txOut struct {
-	Result struct {
-		Bestblock     string       `json:"bestblock"`
-		Confirmations int          `json:"confirmations"`
-		Value         float64      `json:"value"`
-		ScriptPubKey  ScriptPubKey `json:"scriptPubKey"`
-		Coinbase      bool         `json:"coinbase"`
-	} `json:"result"`
-	Error interface{} `json:"error"`
-	ID    string      `json:"id"`
+type TxOut struct {
+	Bestblock     string       `json:"bestblock"`
+	Confirmations int          `json:"confirmations"`
+	Value         float64      `json:"value"`
+	ScriptPubKey  ScriptPubKey `json:"scriptPubKey"`
+	Coinbase      bool         `json:"coinbase"`
 }

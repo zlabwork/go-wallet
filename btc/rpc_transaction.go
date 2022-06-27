@@ -12,20 +12,26 @@ import (
 
 // GetTxOut
 // https://developer.bitcoin.org/reference/rpc/gettxout.html
-func (rc *RpcClient) GetTxOut(tx string, index uint32) (*txOut, error) {
+func (rc *RpcClient) GetTxOut(tx string, index uint32) (*TxOut, error) {
 
 	b, err := rc.Request("gettxout", []interface{}{tx, index})
 	if err != nil {
 		return nil, err
 	}
-	var out txOut
+
+	type response struct {
+		Response
+		Result TxOut
+	}
+	var out response
 	if err = json.Unmarshal(b, &out); err != nil {
 		return nil, err
 	}
-	if out.Result.Value == 0 {
-		return nil, fmt.Errorf("%s, error txId or tx has been spent", tx)
-	}
-	return &out, nil
+
+	//if out.Value == 0 {
+	//	return nil, fmt.Errorf("%s, error txId or tx has been spent", tx)
+	//}
+	return &out.Result, nil
 }
 
 func (rc *RpcClient) CreateTransferAll(ins []string, addr string, sat int64) (hex string, error error) {
@@ -42,7 +48,7 @@ func (rc *RpcClient) CreateTransferAll(ins []string, addr string, sat int64) (he
 			return "", err
 		}
 
-		v, err := strconv.ParseInt(decimal.NewFromFloat(ou.Result.Value).Mul(decimal.NewFromInt(100000000)).String(), 10, 64)
+		v, err := strconv.ParseInt(decimal.NewFromFloat(ou.Value).Mul(decimal.NewFromInt(100000000)).String(), 10, 64)
 		if err != nil {
 			return "", err
 		}
@@ -90,7 +96,7 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 		if err != nil {
 			return "", err
 		}
-		amt := int64(txOut.Result.Value * math.Pow10(8))
+		amt := int64(txOut.Value * math.Pow10(8))
 		if amt < minTxAmount {
 			return "", fmt.Errorf("current %d satoshis, less than minimum amount %d satoshis", amt, minTxAmount)
 		}

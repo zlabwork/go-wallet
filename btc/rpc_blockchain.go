@@ -1,5 +1,10 @@
 package btc
 
+import (
+	"encoding/json"
+	"errors"
+)
+
 // GetBlockHash
 // https://developer.bitcoin.org/reference/rpc/getblockhash.html
 func (rc *RpcClient) GetBlockHash(blockHeight int64) (string, error) {
@@ -7,23 +12,33 @@ func (rc *RpcClient) GetBlockHash(blockHeight int64) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// {"result":"3290a295cbb8e27c845f24699ba20f161743a57aa3960006113b16fbdf6e5b73","error":null,"id":"1656317255927154700"}
 	return string(b[11:75]), nil
 }
 
 // GetBlock
 // https://developer.bitcoin.org/reference/rpc/getblock.html
-func (rc *RpcClient) GetBlock(blockHeight int64) ([]byte, error) {
-	// 1. 获取块hash
-	h, err := rc.GetBlockHash(blockHeight)
+func (rc *RpcClient) GetBlock(hashString string) (*Block, error) {
+
+	// 1. request rpc
+	b, err := rc.Request("getblock", []interface{}{hashString, 2})
 	if err != nil {
 		return nil, err
 	}
 
-	// 2. 获取块数据
-	b, err := rc.Request("getblock", []interface{}{h, 2})
-	if err != nil {
+	// 2. json decode
+	type response struct {
+		Response
+		Result Block
+	}
+	var resp response
+	if err := json.Unmarshal(b, &resp); err != nil {
 		return nil, err
 	}
+	if resp.Error != "" {
+		return nil, errors.New(resp.Error)
+	}
 
-	return b, nil
+	// 3. return
+	return &resp.Result, nil
 }

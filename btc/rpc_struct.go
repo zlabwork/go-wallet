@@ -41,16 +41,22 @@ type Transaction struct {
 	Hex      string `json:"hex"`
 }
 
+type RawTransaction struct {
+	Transaction
+	//InActiveChain bool   `json:"in_active_chain"`
+	Blockhash     string `json:"blockhash"`
+	Confirmations int    `json:"confirmations"`
+	Time          int    `json:"time"`
+	Blocktime     int    `json:"blocktime"`
+}
+
 type Vin struct {
-	Coinbase  string `json:"coinbase"`
-	Txid      string `json:"txid"`
-	Vout      int    `json:"vout"`
-	ScriptSig struct {
-		Asm string `json:"asm"`
-		Hex string `json:"hex"`
-	} `json:"scriptSig"`
-	Txinwitness []string `json:"txinwitness"`
-	Sequence    int64    `json:"sequence"`
+	Coinbase    string    `json:"coinbase"`
+	Txid        string    `json:"txid"`
+	Vout        int       `json:"vout"`
+	ScriptSig   ScriptSig `json:"scriptSig"`
+	Txinwitness []string  `json:"txinwitness"`
+	Sequence    int64     `json:"sequence"`
 }
 
 type Vout struct {
@@ -65,6 +71,11 @@ type ScriptPubKey struct {
 	Type      string   `json:"type"`
 	ReqSigs   int      `json:"reqSigs"`
 	Addresses []string `json:"addresses"`
+}
+
+type ScriptSig struct {
+	Asm string `json:"asm"`
+	Hex string `json:"hex"`
 }
 
 type TxOut struct {

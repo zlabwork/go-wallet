@@ -271,3 +271,26 @@ func (rc *RpcClient) SendRawTX(signedHex string) (tx string, error error) {
 
 	return resp.Result, nil
 }
+
+// GetRawTransaction
+// @docs https://developer.bitcoin.org/reference/rpc/getrawtransaction.html
+func (rc *RpcClient) GetRawTransaction(txId string, blockHash string) (*RawTransaction, error) {
+
+	// bitcoin-cli getrawtransaction "mytxid" true "myblockhash"
+	// bitcoin-cli getrawtransaction "mytxid" false "myblockhash" // 返回 hexString 可使用 decoderawtransaction 解析
+	b, err := rc.Request("getrawtransaction", []interface{}{txId, true, blockHash})
+	if err != nil {
+		return nil, err
+	}
+
+	type response struct {
+		Response
+		Result RawTransaction
+	}
+	var resp response
+	if err = json.Unmarshal(b, &resp); err != nil {
+		return nil, err
+	}
+
+	return &resp.Result, nil
+}

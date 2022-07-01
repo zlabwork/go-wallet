@@ -33,8 +33,7 @@ func p2pkh(hash160 []byte) string {
 }
 
 // ParseHash160
-// support: P2pkh, P2sh, P2wpkh
-// todo: P2wsh, P2wpkhInP2sh
+// only support: P2pkh, P2sh, P2wpkh
 // todo: support regtest testnet
 func ParseHash160(address string) ([]byte, error) {
 	if address[0:2] == "bc" {

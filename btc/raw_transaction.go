@@ -16,8 +16,8 @@ type addrDesc struct {
 
 type msgTx struct {
 	Version  int32
-	TxIn     []*VIn
-	TxOut    []*VOut
+	TxIn     []TxIn
+	TxOut    map[string]int64
 	LockTime uint32
 }
 
@@ -31,7 +31,7 @@ func NewTransaction() *transaction {
 // CreateRawTx
 // @link https://www.royalfork.org/2014/11/20/txn-demo/
 // @link https://developer.bitcoin.org/reference/transactions.html#raw-transaction-format
-func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]byte, error) {
+func (tx *transaction) CreateRawTx(ins []TxIn, outs map[string]int64, lockTime uint32) ([]byte, error) {
 
 	// 格式: 01000000 NUM01 INPUT NUM02 OUTPUTS 00000000
 	ver := []byte{0x01, 0x00, 0x00, 0x00} // 版本
@@ -51,8 +51,8 @@ func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]b
 
 	// outputs
 	var outputs []byte
-	for _, o := range outs {
-		ou, err := tx.txOut(o)
+	for addr, sat := range outs {
+		ou, err := tx.txOut(addr, sat)
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +70,7 @@ func (tx *transaction) CreateRawTx(ins []VIn, outs []VOut, lockTime uint32) ([]b
 // FIXME:: 未完待续
 // @docs https://www.royalfork.org/2014/11/20/txn-demo/
 // @link https://developer.bitcoin.org/reference/transactions.html#txin-a-transaction-input-non-coinbase
-func (tx *transaction) txIn(in VIn) ([]byte, error) {
+func (tx *transaction) txIn(in TxIn) ([]byte, error) {
 	// ======================================================================
 	// 格式: tx的反转 + INDEX (uint32) + length of script + script + 0xFFFFFFFF
 	// ======================================================================
@@ -113,15 +113,12 @@ func (tx *transaction) txIn(in VIn) ([]byte, error) {
 
 // @docs https://www.royalfork.org/2014/11/20/txn-demo/
 // @link https://developer.bitcoin.org/reference/transactions.html#txout-a-transaction-output
-func (tx *transaction) txOut(out VOut) ([]byte, error) {
+func (tx *transaction) txOut(addr string, sat int64) ([]byte, error) {
 
 	// ============================================
 	// 格式: sat value + pk_script bytes + pk_script
 	// pk_script 的最大长度 10,000 bytes
 	// ============================================
-
-	addr := out.Addr
-	sat := out.Amt
 
 	// 1. amount in satoshis
 	val := make([]byte, 8)

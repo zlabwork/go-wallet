@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+type TxIn struct {
+	Tx string // txId
+	N  uint32 // vout
+}
+
 // GetTxOut
 // https://developer.bitcoin.org/reference/rpc/gettxout.html
 func (rc *RpcClient) GetTxOut(tx string, index uint32) (*TxOut, error) {
@@ -34,10 +39,10 @@ func (rc *RpcClient) GetTxOut(tx string, index uint32) (*TxOut, error) {
 	return &out.Result, nil
 }
 
-func (rc *RpcClient) CreateTransferAll(ins []string, addr string, sat int64) (hex string, error error) {
+func (rc *RpcClient) CreateTransferAll(ins []string, addr string, feeSat int64) (hex string, error error) {
 
 	var t int64
-	var inT []VIn
+	var inT []TxIn
 	for _, str := range ins {
 		s := strings.Split(str, ":")
 		tx := strings.TrimSpace(s[0])
@@ -54,40 +59,37 @@ func (rc *RpcClient) CreateTransferAll(ins []string, addr string, sat int64) (he
 		}
 
 		if v < minTxAmount {
-			return "", fmt.Errorf("%s current %d satoshis, less than minimum amount %d satoshis", tx, v, minTxAmount)
+			return "", fmt.Errorf("tx:%s n:%d current %d satoshis, less than minimum amount %d satoshis", tx, n, v, minTxAmount)
 		}
 		t += v
-		inT = append(inT, VIn{Tx: tx, N: uint32(n)})
+		inT = append(inT, TxIn{Tx: tx, N: uint32(n)})
 	}
 
 	// fees
 	size := 148*len(ins) + 34 + 10
-	fee := int64(size) * sat
+	fee := int64(size) * feeSat
 
-	return rc.createRawTX(inT, []VOut{{Addr: addr, Amt: t - fee}}, "")
+	outs := map[string]int64{
+		addr: t - fee,
+	}
+	return rc.createRawTX(inT, outs, "")
 }
 
 // CreateTXAlias - Alias for CreateTX
-func (rc *RpcClient) CreateTXAlias(ins []string, outs map[string]int64, hexData string, sat int64, changeAddress string) (hex string, error error) {
-	var inT []VIn
-	var outT []VOut
+func (rc *RpcClient) CreateTXAlias(ins []string, outs map[string]int64, hexData string, feeSat int64, changeAddress string) (hex string, error error) {
+	var inT []TxIn
 	for _, str := range ins {
 		s := strings.Split(str, ":")
 		n, err := strconv.ParseUint(strings.TrimSpace(s[1]), 10, 64)
 		if err != nil {
 			return "", errors.New(str + ", error vout format")
 		}
-		inT = append(inT, VIn{Tx: strings.TrimSpace(s[0]), N: uint32(n)})
+		inT = append(inT, TxIn{Tx: strings.TrimSpace(s[0]), N: uint32(n)})
 	}
-	for ad, n := range outs {
-		outT = append(outT, VOut{Addr: ad, Amt: n})
-	}
-	return rc.CreateTX(inT, outT, hexData, sat, changeAddress)
+	return rc.CreateTX(inT, outs, hexData, feeSat, changeAddress)
 }
 
-// CreateTX
-// outs := []VOut{{Addr: "btc address 2", Amt: 1000}, {Addr: "btc address 1", Amt: 2000}}
-func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64, changeAddress string) (hex string, error error) {
+func (rc *RpcClient) CreateTX(ins []TxIn, outs map[string]int64, hexData string, feeSat int64, changeAddress string) (hex string, error error) {
 
 	// 1. total in
 	var totalIn int64
@@ -98,7 +100,7 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 		}
 		amt := int64(txOut.Value * math.Pow10(8))
 		if amt < minTxAmount {
-			return "", fmt.Errorf("current %d satoshis, less than minimum amount %d satoshis", amt, minTxAmount)
+			return "", fmt.Errorf("tx:%s n:%d current %d satoshis, less than minimum amount %d satoshis", in.Tx, in.N, amt, minTxAmount)
 		}
 		totalIn += amt
 	}
@@ -106,20 +108,20 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 	// 2. total out
 	var totalOut int64
 	isInOuts := false
-	for _, out := range outs {
-		if out.Addr == changeAddress {
+	for addr, sa := range outs {
+		if addr == changeAddress {
 			isInOuts = true
 		}
-		if out.Amt < minTxAmount {
-			return "", fmt.Errorf("transfer %d satoshis, less than minimum amount %d satoshis", out.Amt, minTxAmount)
+		if sa < minTxAmount {
+			return "", fmt.Errorf("transfer %d satoshis, less than minimum amount %d satoshis", sa, minTxAmount)
 		}
-		totalOut += out.Amt
+		totalOut += sa
 	}
 
 	// TODO: 1. confirm the calculate process
 	// 3. fee sat
 	size := 148*len(ins) + 34*len(outs) + 10
-	fee := int64(size) * sat
+	fee := int64(size) * feeSat
 	left := totalIn - totalOut - fee
 	if left < 0 {
 		return "", fmt.Errorf("fee is not enough")
@@ -127,15 +129,15 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 
 	// 4. charge back
 	if isInOuts {
-		for idx, out := range outs {
-			if out.Addr == changeAddress {
-				outs[idx].Amt += left
+		for addr, _ := range outs {
+			if addr == changeAddress {
+				outs[addr] += left
 			}
 		}
 	} else {
-		if left-34*sat > minTxAmount {
-			outs = append(outs, VOut{Addr: changeAddress, Amt: left - 34*sat})
-			fee += 34 * sat
+		if left-34*feeSat > minTxAmount {
+			outs[changeAddress] = left - 34*feeSat
+			fee += 34 * feeSat
 		}
 	}
 
@@ -144,7 +146,7 @@ func (rc *RpcClient) CreateTX(ins []VIn, outs []VOut, hexData string, sat int64,
 
 // CreateRawTX - TODO: Fix the address duplicated in VOut
 // https://developer.bitcoin.org/reference/rpc/createrawtransaction.html
-func (rc *RpcClient) createRawTX(ins []VIn, outs []VOut, hexData string) (hex string, error error) {
+func (rc *RpcClient) createRawTX(ins []TxIn, outs map[string]int64, hexData string) (hex string, error error) {
 
 	// 1. check
 	if len(ins) < 1 {
@@ -153,8 +155,8 @@ func (rc *RpcClient) createRawTX(ins []VIn, outs []VOut, hexData string) (hex st
 	if len(outs) < 1 {
 		return "", fmt.Errorf("no outputs")
 	}
-	for _, t := range outs {
-		if t.Amt < minTxAmount {
+	for _, sat := range outs {
+		if sat < minTxAmount {
 			return "", fmt.Errorf("min allow amount %d satoshis", minTxAmount)
 		}
 	}
@@ -175,9 +177,9 @@ func (rc *RpcClient) createRawTX(ins []VIn, outs []VOut, hexData string) (hex st
 
 	// 3. out
 	outData := make(map[string]interface{})
-	for _, ou := range outs {
-		n := decimal.NewFromInt(ou.Amt).Div(decimal.NewFromInt(100000000)) // ou.Amt / 10^8
-		outData[ou.Addr] = n.String()
+	for addr, sat := range outs {
+		n := decimal.NewFromInt(sat).Div(decimal.NewFromInt(100000000)) // ou.Amt / 10^8
+		outData[addr] = n.String()
 	}
 	if len(hexData) > 0 {
 		outData["data"] = hexData

@@ -9,9 +9,9 @@ import (
 // [root@space ~]# bitcoin-cli getmempoolinfo
 // {
 //   "loaded": true,
-//   "size": 0,
-//   "bytes": 0,
-//   "usage": 64,
+//   "size": 188,
+//   "bytes": 65981,
+//   "usage": 297456,
 //   "maxmempool": 300000000,
 //   "mempoolminfee": 0.00001000,
 //   "minrelaytxfee": 0.00001000,

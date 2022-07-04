@@ -280,7 +280,11 @@ func (rc *RpcClient) GetRawTransaction(txId string, blockHash string) (*RawTrans
 
 	// bitcoin-cli getrawtransaction "mytxid" true "myblockhash"
 	// bitcoin-cli getrawtransaction "mytxid" false "myblockhash" // 返回 hexString 可使用 decoderawtransaction 解析
-	b, err := rc.Request("getrawtransaction", []interface{}{txId, true, blockHash})
+	args := []interface{}{txId, true, blockHash}
+	if blockHash == "" {
+		args = []interface{}{txId, true}
+	}
+	b, err := rc.Request("getrawtransaction", args)
 	if err != nil {
 		return nil, err
 	}

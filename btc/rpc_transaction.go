@@ -59,7 +59,7 @@ func (rc *RpcClient) CreateTransferAll(ins []string, addr string, feeSat int64) 
 		}
 
 		if v < minTxAmount {
-			return "", fmt.Errorf("tx:%s n:%d current %d satoshis, less than minimum amount %d satoshis", tx, n, v, minTxAmount)
+			return "", fmt.Errorf("error, [tx:%s vout:%d], %d satoshis, less than minimum number (%d satoshis)", tx, n, v, minTxAmount)
 		}
 		t += v
 		inT = append(inT, TxIn{Tx: tx, N: uint32(n)})
@@ -100,7 +100,7 @@ func (rc *RpcClient) CreateTX(ins []TxIn, outs map[string]int64, hexData string,
 		}
 		amt := int64(txOut.Value * math.Pow10(8))
 		if amt < minTxAmount {
-			return "", fmt.Errorf("tx:%s n:%d current %d satoshis, less than minimum amount %d satoshis", in.Tx, in.N, amt, minTxAmount)
+			return "", fmt.Errorf("error, [tx:%s vout:%d], %d satoshis, less than minimum number (%d satoshis)", in.Tx, in.N, amt, minTxAmount)
 		}
 		totalIn += amt
 	}

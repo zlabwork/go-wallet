@@ -13,8 +13,6 @@ Support transfer for P2sh, P2wsh, MultiP2wsh, MultiP2wshInP2sh
 ## BTC
 ```golang
 // 地址与私钥
-import "github.com/zlabwork/go-wallet/btc"
-
 priKey := btc.NewPriKeyRandom()
 priKey.WIF() // L211iZmidtxLQ2s7hzM9BYacPUu2asT1KkCkyrTbNbDib2N85ai5
 pubKey := priKey.PubKey()
@@ -23,9 +21,6 @@ address2 := pubKey.Address().P2sh()  // 3AJ5kHgmaeEqLiSzeKe4iLRYoKfiCH5Y1C
 ```
 ```golang
 // 交易
-import "github.com/zlabwork/go-wallet/btc"
-
-// 配置
 // btc.SetNetwork("testnet")
 c := &btc.HandleConfigs{
     Host: "http://127.0.0.1:18443",
@@ -45,7 +40,7 @@ outs := map[string]int64{
     "bc1q7k85507tl9n2aguczwkjn9ytjvjvtc07g5yqsk": 2499000000, // 24.99 BTC
     "1MVf99Vv8ZbFXXL4UwUnQbTLaAphBNeGFW":         2499000000, // int64(24.99 * math.Pow10(8))
 }
-// 生成交易 chargeBack 为找零地址
+// 生成交易 changeAddress 为找零地址
 // b, err := cli.CreateTransferAll(ins, "1PPQCxxDqSpjxu8N2kEkEimrfUcpWT4Duc", 10)
 b, _ := cli.CreateTXAlias(ins, outs, "", 10, "1PPQCxxDqSpjxu8N2kEkEimrfUcpWT4Duc")
 // 交易签名

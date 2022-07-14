@@ -91,6 +91,10 @@ func (rc *RpcClient) CreateTXAlias(ins []string, outs map[string]int64, hexData 
 
 func (rc *RpcClient) CreateTX(ins []TxIn, outs map[string]int64, hexData string, feeSat int64, changeAddress string) (hex string, error error) {
 
+	if len(changeAddress) < 10 {
+		return "", errors.New("error change address")
+	}
+
 	// 1. total in
 	var totalIn int64
 	for _, in := range ins {

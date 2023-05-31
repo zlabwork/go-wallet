@@ -1,6 +1,6 @@
 module github.com/zlabwork/go-wallet
 
-go 1.14
+go 1.20
 
 require (
 	github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec

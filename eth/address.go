@@ -1,11 +1,8 @@
 package eth
 
-import (
-	"encoding/hex"
-	"github.com/zlabwork/go-wallet"
-)
+import "encoding/hex"
 
-type Address chain.EthAddress
+type Address [20]byte
 
 func NewAddress(b []byte) *Address {
 	var a Address

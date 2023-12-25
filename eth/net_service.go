@@ -7,12 +7,14 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
+	"log"
 	"math/big"
 	"regexp"
 )
@@ -203,18 +205,29 @@ func (h *Handle) CreateTxDataAdvanced(priKey []byte, toAddr string, wei *big.Int
 
 	// 4.
 	toAddress := common.HexToAddress(toAddr)
-	tx := types.NewTransaction(nonce, toAddress, wei, gasLimit, gasPrice, data)
+	tx := types.NewTx(&types.LegacyTx{
+		Nonce:    nonce,
+		To:       &toAddress,
+		Value:    wei,
+		Gas:      gasLimit,
+		GasPrice: gasPrice,
+		Data:     data,
+	})
 
 	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
 	if err != nil {
 		return "", err
 	}
 
-	ts := types.Transactions{signedTx}
-	rawTxBytes := ts.GetRlp(0)
-	rawTxHex := hex.EncodeToString(rawTxBytes)
+	// FIXME :: this is a bug, need to be fixed
+	log.Println(signedTx)
+	return "", fmt.Errorf("error, needs to fix")
 
-	return rawTxHex, nil
+	//ts := types.Transactions{signedTx}
+	//rawTxBytes := ts.GetRlp(0)
+	//rawTxHex := hex.EncodeToString(rawTxBytes)
+	//
+	//return rawTxHex, nil
 }
 
 // SendRawTX
